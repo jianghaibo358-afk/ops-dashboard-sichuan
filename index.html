@@ -73,9 +73,32 @@
   .rule{margin-top:12px;font-size:12.5px;color:var(--ink3);line-height:1.8}
   .rule b.ok{color:var(--ok)} .rule b.warn{color:var(--warn)} .rule b.sev{color:var(--sev)}
   .foot{margin-top:20px;font-size:12px;color:var(--ink3)}
+
+  /* 密码门 */
+  #gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+  .gate-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:38px 44px;text-align:center;box-shadow:0 12px 40px -22px rgba(16,42,80,.5)}
+  .gate-title{font-size:19px;font-weight:700;color:var(--ink)}
+  .gate-sub{font-size:12.5px;color:var(--ink3);margin:8px 0 20px}
+  .gate-row{display:flex;gap:8px;justify-content:center}
+  #pw{font-family:inherit;font-size:15px;text-align:center;letter-spacing:6px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;outline:none;width:190px}
+  #pw:focus{border-color:var(--blue)}
+  #gate-btn{font-family:inherit;font-size:14px;font-weight:700;color:#fff;background:var(--blue);border:0;border-radius:9px;padding:9px 0;width:110px;cursor:pointer}
+  #gate-btn:hover{background:#1255b8}
+  .gate-err{font-size:12px;color:var(--sev);margin-top:12px;min-height:16px}
 </style>
 </head>
 <body>
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-title">苹果零售 · 库存周转看板</div>
+    <div class="gate-sub">请输入访问密码</div>
+    <div class="gate-row">
+      <input type="password" id="pw" placeholder="请输入密码" autocomplete="off">
+      <button id="gate-btn">进入</button>
+    </div>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
 <div class="wrap">
   <div class="hd">
     <h1><span>四川</span><em>苹果零售 · 库存周转看板</em></h1>
@@ -556,6 +579,19 @@
 </div>
 
 <script>
+const PW_HASH = 2392125205;
+function h(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h;}
+function tryEnter(){
+  if(h(document.getElementById("pw").value) === PW_HASH){
+    sessionStorage.setItem("dash_ok","1");
+    document.getElementById("gate").style.display="none";
+  } else {
+    document.getElementById("gate-err").textContent="密码错误，请重试";
+  }
+}
+document.getElementById("gate-btn").onclick=tryEnter;
+document.getElementById("pw").addEventListener("keydown",e=>{if(e.key==="Enter")tryEnter();});
+if(sessionStorage.getItem("dash_ok")==="1")document.getElementById("gate").style.display="none";
 const ALLROWS = Array.from(document.querySelectorAll("#tb tr"));
 function render(){
   const q = document.getElementById("q").value.trim();
