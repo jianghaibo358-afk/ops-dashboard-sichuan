@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>苹果零售 · 库存周转看板（四川）</title>
+<style>
+  :root{
+    --bg:#eef3fa; --card:#fff; --line:#dfe8f5; --line2:#eaf0f9;
+    --ink:#0b2545; --ink2:#3d5674; --ink3:#7b8ea8;
+    --blue:#1668dc; --blue-soft:#e8f1ff;
+    --ok:#079455; --ok-bg:#eafaf1;
+    --warn:#bd8a00; --warn-bg:#ffef9e;
+    --sev:#d92d20; --sev-bg:#fef2f1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;padding:26px 30px 46px}
+  .wrap{max-width:1180px;margin:0 auto}
+  .num{font-variant-numeric:tabular-nums}
+  .hd h1{display:flex;align-items:center;gap:14px;margin:0;font-size:25px;font-weight:700;letter-spacing:.4px}
+  .hd h1 em{font-style:normal;color:var(--blue)}
+  .hd .meta{margin-top:10px;font-size:13px;color:var(--ink3);line-height:1.7}
+  .hd .meta b{color:var(--ink2);font-weight:600}
+  .hd .meta .sep{color:#c6d5e8;padding:0 9px}
+
+  .cards{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 1px 2px rgba(16,42,80,.04),0 8px 24px -18px rgba(16,42,80,.28);
+    flex:1 1 160px;min-width:150px;padding:18px 20px}
+  .card .lbl{font-size:12.5px;color:var(--ink3);font-weight:600}
+  .card .v{font-size:30px;font-weight:700;margin-top:6px;line-height:1}
+  .card .v small{font-size:14px;color:var(--ink2);font-weight:600;margin-left:3px}
+  .card.ok .v{color:var(--ok)}
+  .card.warn .v{color:var(--warn)}
+  .card.sev .v{color:var(--sev)}
+
+  .sec{margin-top:24px}
+  .sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;
+    padding-bottom:10px;border-bottom:1px solid var(--line2)}
+  .sec-hd h2{margin:0;font-size:16px;font-weight:700}
+  .filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .filters input,.filters select{font-family:inherit;font-size:13px;color:var(--ink);
+    border:1px solid var(--line);border-radius:9px;padding:7px 11px;outline:none}
+  .filters input{min-width:220px}
+  .filters input:focus,.filters select:focus{border-color:var(--blue)}
+  .filters .cnt{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+  .filters .cnt b{color:var(--ink);font-weight:700}
+
+  .scroll{overflow:auto;border:1px solid var(--line2);border-radius:12px;background:var(--card)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{position:sticky;top:0;background:#f6f9fe;color:var(--ink3);font-weight:600;
+    text-align:right;padding:9px 12px;border-bottom:1px solid var(--line);font-size:11.5px;z-index:2;white-space:nowrap}
+  th:nth-child(1),th:nth-child(2){text-align:left}
+  td{padding:8px 12px;border-bottom:1px solid var(--line2);text-align:right;color:var(--ink2)}
+  td.name{text-align:left;color:var(--ink);font-weight:600;max-width:300px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  td.idx{text-align:left;color:var(--ink3)}
+  td.aid{color:var(--ink3);font-size:12px}
+  td.bold{font-weight:700}
+  tr:hover td{background:#f7fafe}
+  tr.lv-sev td.bold{color:var(--sev);font-weight:700}
+  tr.lv-warn td.bold{color:var(--warn);font-weight:700}
+  tr.lv-ok td.bold{color:var(--ok);font-weight:700}
+
+  .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px}
+  .tag.ok{background:var(--ok-bg);color:var(--ok)}
+  .tag.warn{background:var(--warn-bg);color:var(--warn)}
+  .tag.sev{background:var(--sev-bg);color:var(--sev)}
+  .tag.na{background:#f1f3f7;color:var(--ink3)}
+
+  .rule{margin-top:12px;font-size:12.5px;color:var(--ink3);line-height:1.8}
+  .rule b.ok{color:var(--ok)} .rule b.warn{color:var(--warn)} .rule b.sev{color:var(--sev)}
+  .foot{margin-top:20px;font-size:12px;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd">
+    <h1><span>四川</span><em>苹果零售 · 库存周转看板</em></h1>
+    <div class="meta">
+      本分公司 <b>54</b> 家门店
+      <span class="sep">·</span>数据周期 <b>2026-09-22 ~ 2026-10-22</b>（31 天）
+      <span class="sep">·</span>生成时间 <b>2026-10-22 11:19</b>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card"><div class="lbl">门店总数</div><div class="v">54<small>家</small></div></div>
+    <div class="card"><div class="lbl">iPhone 可用库存</div><div class="v">4265<small>台</small></div></div>
+    <div class="card ok"><div class="lbl">达标（≤15天）</div><div class="v">19<small>家</small></div></div>
+    <div class="card warn"><div class="lbl">预警（15~20天）</div><div class="v">12<small>家</small></div></div>
+    <div class="card sev"><div class="lbl">严重（&gt;20天）</div><div class="v">23<small>家</small></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hd"><h2>门店库存周转明细</h2></div>
+    <div class="filters">
+      <input id="q" placeholder="搜索门店名称 / 编码" oninput="render()">
+      <select id="lv" onchange="render()">
+        <option value="">全部状态</option>
+        <option value="sev">仅严重（红）</option>
+        <option value="warn">仅预警（黄）</option>
+        <option value="ok">仅达标（绿）</option>
+      </select>
+      <div class="cnt" id="cnt"></div>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th>#</th><th>门店名称</th><th>编码</th><th>iPhone库存</th><th>近4周销量</th><th>周转天数</th><th>状态</th>
+        </tr></thead>
+        <tbody id="tb"><tr class="lv-sev">
+      <td class="num idx">1</td>
+      <td class="name" title="鑫桔子商贸遂宁船山城市梦想店">鑫桔子商贸遂宁船山城市梦想店</td>
+      <td class="num aid">3997410</td>
+      <td class="num">86</td>
+      <td class="num">132</td>
+      <td class="num bold">20.2天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">2</td>
+      <td class="name" title="德来科技重庆云阳滨江购物公园店">德来科技重庆云阳滨江购物公园店</td>
+      <td class="num aid">4419323</td>
+      <td class="num">77</td>
+      <td class="num">117</td>
+      <td class="num bold">20.4天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">3</td>
+      <td class="name" title="九方同兴南充顺庆1227购物广场店">九方同兴南充顺庆1227购物广场店</td>
+      <td class="num aid">3804517</td>
+      <td class="num">127</td>
+      <td class="num">189</td>
+      <td class="num bold">20.8天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">4</td>
+      <td class="name" title="重百数码重庆长寿区重庆百货店">重百数码重庆长寿区重庆百货店</td>
+      <td class="num aid">3646884</td>
+      <td class="num">90</td>
+      <td class="num">132</td>
+      <td class="num bold">21.1天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">5</td>
+      <td class="name" title="JINGMEI广安武胜店">JINGMEI广安武胜店</td>
+      <td class="num aid">1154093</td>
+      <td class="num">56</td>
+      <td class="num">81</td>
+      <td class="num bold">21.4天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">6</td>
+      <td class="name" title="德来科技重庆万州海成长江之星店">德来科技重庆万州海成长江之星店</td>
+      <td class="num aid">4562007</td>
+      <td class="num">114</td>
+      <td class="num">159</td>
+      <td class="num bold">22.2天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">7</td>
+      <td class="name" title="育丰霖坤重庆北碚区万达广场店">育丰霖坤重庆北碚区万达广场店</td>
+      <td class="num aid">3652793</td>
+      <td class="num">101</td>
+      <td class="num">140</td>
+      <td class="num bold">22.4天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">8</td>
+      <td class="name" title="华翼通讯射洪凯立广场店">华翼通讯射洪凯立广场店</td>
+      <td class="num aid">4034092</td>
+      <td class="num">110</td>
+      <td class="num">145</td>
+      <td class="num bold">23.5天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">9</td>
+      <td class="name" title="龙生通讯绵阳安县店">龙生通讯绵阳安县店</td>
+      <td class="num aid">1288691</td>
+      <td class="num">63</td>
+      <td class="num">82</td>
+      <td class="num bold">23.8天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">10</td>
+      <td class="name" title="爱沣通讯重庆江津紫金天街店">爱沣通讯重庆江津紫金天街店</td>
+      <td class="num aid">4631131</td>
+      <td class="num">71</td>
+      <td class="num">92</td>
+      <td class="num bold">23.9天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">11</td>
+      <td class="name" title="圣者之家科技广安武胜融恒时代广场店">圣者之家科技广安武胜融恒时代广场店</td>
+      <td class="num aid">3817521</td>
+      <td class="num">80</td>
+      <td class="num">98</td>
+      <td class="num bold">25.3天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">12</td>
+      <td class="name" title="羽翔通讯广元剑阁店">羽翔通讯广元剑阁店</td>
+      <td class="num aid">1408759</td>
+      <td class="num">59</td>
+      <td class="num">70</td>
+      <td class="num bold">26.1天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">13</td>
+      <td class="name" title="酷思商贸重庆永川俊豪中央大街店">酷思商贸重庆永川俊豪中央大街店</td>
+      <td class="num aid">4672360</td>
+      <td class="num">118</td>
+      <td class="num">138</td>
+      <td class="num bold">26.5天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">14</td>
+      <td class="name" title="江鹰通讯广元青川浩达店">江鹰通讯广元青川浩达店</td>
+      <td class="num aid">3090687</td>
+      <td class="num">56</td>
+      <td class="num">60</td>
+      <td class="num bold">28.9天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">15</td>
+      <td class="name" title="爱沣通讯重庆涪陵百汇广场店">爱沣通讯重庆涪陵百汇广场店</td>
+      <td class="num aid">4642352</td>
+      <td class="num">93</td>
+      <td class="num">95</td>
+      <td class="num bold">30.3天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">16</td>
+      <td class="name" title="皓天通讯简阳店">皓天通讯简阳店</td>
+      <td class="num aid">2938165</td>
+      <td class="num">90</td>
+      <td class="num">91</td>
+      <td class="num bold">30.7天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">17</td>
+      <td class="name" title="汇禾电子重庆垫江明悦天街店">汇禾电子重庆垫江明悦天街店</td>
+      <td class="num aid">4645586</td>
+      <td class="num">73</td>
+      <td class="num">73</td>
+      <td class="num bold">31.0天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">18</td>
+      <td class="name" title="星光通讯达州开江店">星光通讯达州开江店</td>
+      <td class="num aid">1312117</td>
+      <td class="num">69</td>
+      <td class="num">66</td>
+      <td class="num bold">32.4天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">19</td>
+      <td class="name" title="洪媒化川眉山彭山置信逸都城店">洪媒化川眉山彭山置信逸都城店</td>
+      <td class="num aid">4642328</td>
+      <td class="num">76</td>
+      <td class="num">68</td>
+      <td class="num bold">34.6天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">20</td>
+      <td class="name" title="华翼通讯射洪万达广场店">华翼通讯射洪万达广场店</td>
+      <td class="num aid">4076053</td>
+      <td class="num">82</td>
+      <td class="num">70</td>
+      <td class="num bold">36.3天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">21</td>
+      <td class="name" title="渝广通信凉会东SCC川滇世纪中心店">渝广通信凉会东SCC川滇世纪中心店</td>
+      <td class="num aid">4653548</td>
+      <td class="num">22</td>
+      <td class="num">16</td>
+      <td class="num bold">42.6天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">22</td>
+      <td class="name" title="德来科技重庆梁平重百梁平商场店">德来科技重庆梁平重百梁平商场店</td>
+      <td class="num aid">4660485</td>
+      <td class="num">119</td>
+      <td class="num">85</td>
+      <td class="num bold">43.4天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-sev">
+      <td class="num idx">23</td>
+      <td class="name" title="九方同兴南充西充鹭岛财富天街店">九方同兴南充西充鹭岛财富天街店</td>
+      <td class="num aid">4650732</td>
+      <td class="num">101</td>
+      <td class="num">65</td>
+      <td class="num bold">48.2天</td>
+      <td><span class="tag sev">严重</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">24</td>
+      <td class="name" title="爱沣通讯重庆江津万达广场店">爱沣通讯重庆江津万达广场店</td>
+      <td class="num aid">4213730</td>
+      <td class="num">102</td>
+      <td class="num">208</td>
+      <td class="num bold">15.2天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">25</td>
+      <td class="name" title="渝广通信凉山西昌攀西国贸广场店">渝广通信凉山西昌攀西国贸广场店</td>
+      <td class="num aid">4622800</td>
+      <td class="num">72</td>
+      <td class="num">146</td>
+      <td class="num bold">15.3天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">26</td>
+      <td class="name" title="华翼通讯达州通川和悦广场店">华翼通讯达州通川和悦广场店</td>
+      <td class="num aid">4612182</td>
+      <td class="num">83</td>
+      <td class="num">160</td>
+      <td class="num bold">16.1天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">27</td>
+      <td class="name" title="极客数码德阳吾悦广场店">极客数码德阳吾悦广场店</td>
+      <td class="num aid">3428263</td>
+      <td class="num">117</td>
+      <td class="num">220</td>
+      <td class="num bold">16.5天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">28</td>
+      <td class="name" title="朗融通讯重庆武隆店">朗融通讯重庆武隆店</td>
+      <td class="num aid">1561781</td>
+      <td class="num">63</td>
+      <td class="num">116</td>
+      <td class="num bold">16.8天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">29</td>
+      <td class="name" title="宇翔科技阆中天街里店">宇翔科技阆中天街里店</td>
+      <td class="num aid">3700198</td>
+      <td class="num">93</td>
+      <td class="num">172</td>
+      <td class="num bold">16.8天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">30</td>
+      <td class="name" title="洪媒化川简阳旭海时代广场店">洪媒化川简阳旭海时代广场店</td>
+      <td class="num aid">4048896</td>
+      <td class="num">119</td>
+      <td class="num">214</td>
+      <td class="num bold">17.2天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">31</td>
+      <td class="name" title="aicoo德阳凯旋国际上美广场店">aicoo德阳凯旋国际上美广场店</td>
+      <td class="num aid">3502575</td>
+      <td class="num">86</td>
+      <td class="num">152</td>
+      <td class="num bold">17.5天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">32</td>
+      <td class="name" title="昊络通讯邛崃文脉坊店">昊络通讯邛崃文脉坊店</td>
+      <td class="num aid">4015957</td>
+      <td class="num">72</td>
+      <td class="num">126</td>
+      <td class="num bold">17.7天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">33</td>
+      <td class="name" title="德来科技重庆万州鸿欧广场店">德来科技重庆万州鸿欧广场店</td>
+      <td class="num aid">3681590</td>
+      <td class="num">128</td>
+      <td class="num">222</td>
+      <td class="num bold">17.9天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">34</td>
+      <td class="name" title="天地通讯遂宁店">天地通讯遂宁店</td>
+      <td class="num aid">2123803</td>
+      <td class="num">75</td>
+      <td class="num">120</td>
+      <td class="num bold">19.4天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-warn">
+      <td class="num idx">35</td>
+      <td class="name" title="汇禾电子重庆大渡口万达广场店">汇禾电子重庆大渡口万达广场店</td>
+      <td class="num aid">4156545</td>
+      <td class="num">89</td>
+      <td class="num">140</td>
+      <td class="num bold">19.7天</td>
+      <td><span class="tag warn">预警</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">36</td>
+      <td class="name" title="星月数码重庆店">星月数码重庆店</td>
+      <td class="num aid">1757084</td>
+      <td class="num">36</td>
+      <td class="num">172</td>
+      <td class="num bold">6.5天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">37</td>
+      <td class="name" title="广昊科技重庆永川HMC华茂中心店">广昊科技重庆永川HMC华茂中心店</td>
+      <td class="num aid">3394205</td>
+      <td class="num">78</td>
+      <td class="num">246</td>
+      <td class="num bold">9.8天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">38</td>
+      <td class="name" title="九嘉通讯重庆合川区财富广场店">九嘉通讯重庆合川区财富广场店</td>
+      <td class="num aid">3451379</td>
+      <td class="num">68</td>
+      <td class="num">203</td>
+      <td class="num bold">10.4天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">39</td>
+      <td class="name" title="汇禾电子重庆铜梁万达广场店">汇禾电子重庆铜梁万达广场店</td>
+      <td class="num aid">3741043</td>
+      <td class="num">82</td>
+      <td class="num">231</td>
+      <td class="num bold">11.0天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">40</td>
+      <td class="name" title="祥盛欣商贸什邡百盛广场店">祥盛欣商贸什邡百盛广场店</td>
+      <td class="num aid">4069060</td>
+      <td class="num">43</td>
+      <td class="num">114</td>
+      <td class="num bold">11.7天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">41</td>
+      <td class="name" title="YGTX重庆云阳店">YGTX重庆云阳店</td>
+      <td class="num aid">2031861</td>
+      <td class="num">49</td>
+      <td class="num">122</td>
+      <td class="num bold">12.5天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">42</td>
+      <td class="name" title="广炫通信重庆店">广炫通信重庆店</td>
+      <td class="num aid">1950281</td>
+      <td class="num">51</td>
+      <td class="num">125</td>
+      <td class="num bold">12.6天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">43</td>
+      <td class="name" title="保真通讯重庆店">保真通讯重庆店</td>
+      <td class="num aid">1949580</td>
+      <td class="num">41</td>
+      <td class="num">100</td>
+      <td class="num bold">12.7天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">44</td>
+      <td class="name" title="立盛数码广安邻水店">立盛数码广安邻水店</td>
+      <td class="num aid">1522404</td>
+      <td class="num">40</td>
+      <td class="num">96</td>
+      <td class="num bold">12.9天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">45</td>
+      <td class="name" title="巧琪通信重庆南川万达巧琪科技店">巧琪通信重庆南川万达巧琪科技店</td>
+      <td class="num aid">2477748</td>
+      <td class="num">85</td>
+      <td class="num">201</td>
+      <td class="num bold">13.1天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">46</td>
+      <td class="name" title="育丰霖坤重庆南岸茶园悦地广场店">育丰霖坤重庆南岸茶园悦地广场店</td>
+      <td class="num aid">4048434</td>
+      <td class="num">84</td>
+      <td class="num">195</td>
+      <td class="num bold">13.4天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">47</td>
+      <td class="name" title="立讯通讯德阳绵竹时代广场店">立讯通讯德阳绵竹时代广场店</td>
+      <td class="num aid">4636622</td>
+      <td class="num">68</td>
+      <td class="num">157</td>
+      <td class="num bold">13.4天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">48</td>
+      <td class="name" title="昊络通讯成都崇州圣沅唐人街购物中心店">昊络通讯成都崇州圣沅唐人街购物中心店</td>
+      <td class="num aid">3928217</td>
+      <td class="num">56</td>
+      <td class="num">128</td>
+      <td class="num bold">13.6天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">49</td>
+      <td class="name" title="海佳科技泸州江阳爱琴海购物公园店">海佳科技泸州江阳爱琴海购物公园店</td>
+      <td class="num aid">4098773</td>
+      <td class="num">87</td>
+      <td class="num">198</td>
+      <td class="num bold">13.6天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">50</td>
+      <td class="name" title="果粉通讯宜宾南溪果粉数码店">果粉通讯宜宾南溪果粉数码店</td>
+      <td class="num aid">3479127</td>
+      <td class="num">52</td>
+      <td class="num">118</td>
+      <td class="num bold">13.7天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">51</td>
+      <td class="name" title="酷思商贸重庆永川万达广场店">酷思商贸重庆永川万达广场店</td>
+      <td class="num aid">4425269</td>
+      <td class="num">96</td>
+      <td class="num">216</td>
+      <td class="num bold">13.8天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">52</td>
+      <td class="name" title="龙飞智家资阳雁江摩根时代店">龙飞智家资阳雁江摩根时代店</td>
+      <td class="num aid">3888939</td>
+      <td class="num">98</td>
+      <td class="num">214</td>
+      <td class="num bold">14.2天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">53</td>
+      <td class="name" title="爱沣通讯重庆奉节万达广场店">爱沣通讯重庆奉节万达广场店</td>
+      <td class="num aid">4502729</td>
+      <td class="num">71</td>
+      <td class="num">154</td>
+      <td class="num bold">14.3天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr><tr class="lv-ok">
+      <td class="num idx">54</td>
+      <td class="name" title="道信通讯内江隆昌店">道信通讯内江隆昌店</td>
+      <td class="num aid">1379107</td>
+      <td class="num">48</td>
+      <td class="num">104</td>
+      <td class="num bold">14.3天</td>
+      <td><span class="tag ok">达标</span></td>
+    </tr></tbody>
+      </table>
+    </div>
+    <div class="rule">
+      判定规则：<b class="ok">达标 = 库存周转 ≤ 15 天</b> ｜ <b class="warn">预警 = 15 ~ 20 天</b> ｜ <b class="sev">严重 = &gt; 20 天</b><br>
+      口径：库存周转 = iPhone 可用数量 ÷（近4周 iPhone 销量 ÷ 28 天），即"按当前速度还能卖几天"。
+    </div>
+  </div>
+
+  <div class="foot">数据源：经销商数字化中台 DDC · 本页由脚本自动生成，重新生成会整体重写</div>
+</div>
+
+<script>
+const ALLROWS = Array.from(document.querySelectorAll("#tb tr"));
+function render(){
+  const q = document.getElementById("q").value.trim();
+  const lv = document.getElementById("lv").value;
+  let shown = 0, sev=0, warn=0, ok=0, na=0;
+  ALLROWS.forEach(tr => {
+    const name = tr.querySelector(".name").innerText;
+    const aid = tr.querySelector(".aid").innerText;
+    const trlv = tr.className.replace("lv-","");
+    const matchQ = !q || name.includes(q) || aid.includes(q);
+    const matchLv = !lv || trlv === lv;
+    const show = matchQ && matchLv;
+    tr.style.display = show ? "" : "none";
+    if(show){ shown++; if(trlv==="sev")sev++; else if(trlv==="warn")warn++; else if(trlv==="ok")ok++; else na++; }
+  });
+  document.getElementById("cnt").innerHTML = "筛出 <b>"+shown+"</b> 家 ｜ 严重 <b>"+sev+"</b> · 预警 <b>"+warn+"</b> · 达标 <b>"+ok+"</b>";
+}
+render();
+</script>
+</body>
+</html>
