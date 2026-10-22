@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>苹果零售 · 服务链接率看板（四川）</title>
+<style>
+  :root{
+    --bg:#eef3fa; --card:#fff; --line:#dfe8f5; --line2:#eaf0f9;
+    --ink:#0b2545; --ink2:#3d5674; --ink3:#7b8ea8;
+    --blue:#1668dc;
+    --ok:#079455; --ok-bg:#eafaf1;
+    --sev:#d92d20; --sev-bg:#fef2f1;
+    --warn:#b54708; --warn-bg:#fff8eb;
+    --good:#0e7090; --good-bg:#e9f6fb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;padding:26px 30px 46px}
+  .wrap{max-width:1280px;margin:0 auto}
+  .num{font-variant-numeric:tabular-nums}
+  .hd h1{display:flex;align-items:center;gap:14px;margin:0;font-size:25px;font-weight:700;letter-spacing:.4px}
+  .hd h1 em{font-style:normal;color:var(--blue)}
+  .hd .meta{margin-top:10px;font-size:13px;color:var(--ink3);line-height:1.7}
+  .hd .meta b{color:var(--ink2);font-weight:600}
+  .hd .meta .sep{color:#c6d5e8;padding:0 9px}
+
+  .cards{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 1px 2px rgba(16,42,80,.04),0 8px 24px -18px rgba(16,42,80,.28);
+    flex:1 1 150px;min-width:145px;padding:16px 18px}
+  .card .lbl{font-size:14px;font-weight:700}
+  .card .lbl .desc{display:block;font-size:11px;color:var(--ink3);font-weight:400;margin-top:3px}
+  .card .v{font-size:28px;font-weight:700;margin-top:8px;line-height:1}
+  .card .v small{font-size:13px;color:var(--ink2);font-weight:600;margin-left:3px}
+  .card.sev{border-color:#f5c9c4} .card.sev .v{color:var(--sev)}
+  .card.okc .v{color:var(--ok)}
+
+  .sec{margin-top:24px}
+  .sec-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line2)}
+  .sec-hd h2{margin:0;font-size:16px;font-weight:700}
+  .sec-hd span{font-size:12.5px;color:var(--ink3)}
+
+  .offrow{display:flex;align-items:center;gap:12px;padding:7px 0}
+  .offname{width:110px;font-size:13px;font-weight:600;flex:none}
+  .offname span{font-size:11px;color:var(--ink3);font-weight:400;margin-left:6px}
+  .offbar{flex:1;height:14px;background:#f0f4fa;border-radius:7px;overflow:hidden}
+  .offbar i{display:block;height:100%;border-radius:7px}
+  .offval{width:150px;text-align:right;font-size:13px;font-weight:700;flex:none;font-variant-numeric:tabular-nums}
+  .offval span{display:block;font-size:11px;color:var(--ink3);font-weight:400}
+
+  .fxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .fx{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--ink3);
+    border-radius:12px;padding:13px 15px}
+  .fx.lv4{border-left-color:var(--sev)} .fx.lv3{border-left-color:var(--warn)}
+  .fx.lv2{border-left-color:var(--good)} .fx.lv1{border-left-color:var(--ok)}
+  .fx-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .fx-hd b{font-size:13.5px;font-weight:700;line-height:1.35}
+  .fx-tag{font-size:10.5px;padding:2px 7px;border-radius:20px;background:#f2f5f9;color:var(--ink2);
+    font-weight:600;white-space:nowrap;flex:none}
+  .fx.lv4 .fx-tag{background:var(--sev-bg);color:var(--sev)}
+  .fx.lv3 .fx-tag{background:var(--warn-bg);color:var(--warn)}
+  .fx-body{display:flex;gap:14px;margin-top:11px}
+  .fx-body em{display:block;font-style:normal;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+  .fx.lv4 .fx-body div:first-child em{color:var(--sev)}
+  .fx.lv3 .fx-body div:first-child em{color:var(--warn)}
+  .fx-body small{font-size:10.5px;color:var(--ink3)}
+  .fx-ft{margin-top:10px;font-size:11.5px;color:var(--ink3)}
+  .empty{padding:18px;color:var(--ink3);font-size:13px}
+
+  .filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .filters input,.filters select{font-family:inherit;font-size:13px;color:var(--ink);
+    border:1px solid var(--line);border-radius:9px;padding:7px 11px;outline:none;background:#fff}
+  .filters input{min-width:200px}
+  .filters input:focus,.filters select:focus{border-color:var(--blue)}
+  .filters .cnt{margin-left:auto;font-size:12.5px;color:var(--ink3)}
+  .filters .cnt b{color:var(--ink);font-weight:700}
+
+  .scroll{overflow:auto;border:1px solid var(--line2);border-radius:12px;background:var(--card);max-height:760px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{position:sticky;top:0;background:#f6f9fe;color:var(--ink3);font-weight:600;text-align:right;
+    padding:9px 10px;border-bottom:1px solid var(--line);font-size:11.5px;z-index:2;white-space:nowrap}
+  th:nth-child(1),th:nth-child(2),th:nth-child(3){text-align:left}
+  td{padding:8px 10px;border-bottom:1px solid var(--line2);text-align:right;color:var(--ink2)}
+  td.name{text-align:left;color:var(--ink);font-weight:600;max-width:250px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  td.idx,td.off{text-align:left;color:var(--ink3)}
+  td.aid{color:var(--ink3);font-size:12px}
+  td.ghost{color:#a9b8cc}
+  td.wk{color:var(--ink3);font-size:12px}
+  td.rate{font-weight:700}
+  td.lvt{font-size:11.5px;font-weight:700}
+  .lv1{color:var(--ok)} .lv2{color:var(--good)} .lv3{color:var(--warn)} .lv4{color:var(--sev)}
+  .offbar i.lv1{background:var(--ok)} .offbar i.lv2{background:var(--good)}
+  .offbar i.lv3{background:var(--warn)} .offbar i.lv4{background:var(--sev)}
+  tr:hover td{background:#f7fafe}
+
+  .rule{margin-top:12px;font-size:12.5px;color:var(--ink3);line-height:1.9}
+  .rule b{color:var(--ink2)}
+  .foot{margin-top:20px;font-size:12px;color:var(--ink3)}
+
+  #gate{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+  .gate-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:38px 44px;text-align:center;
+    box-shadow:0 12px 40px -22px rgba(16,42,80,.5)}
+  .gate-title{font-size:19px;font-weight:700}
+  .gate-sub{font-size:12.5px;color:var(--ink3);margin:8px 0 20px}
+  .gate-row{display:flex;gap:8px;justify-content:center}
+  #pw{font-family:inherit;font-size:15px;text-align:center;letter-spacing:6px;border:1px solid var(--line);
+    border-radius:9px;padding:9px 12px;outline:none;width:190px}
+  #pw:focus{border-color:var(--blue)}
+  #gate-btn{font-family:inherit;font-size:14px;font-weight:700;color:#fff;background:var(--blue);border:0;
+    border-radius:9px;padding:9px 0;width:110px;cursor:pointer}
+  .gate-err{font-size:12px;color:var(--sev);margin-top:12px;min-height:16px}
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-title">苹果零售 · 服务链接率看板</div>
+    <div class="gate-sub">请输入访问密码</div>
+    <div class="gate-row">
+      <input type="password" id="pw" placeholder="请输入密码" autocomplete="off">
+      <button id="gate-btn">进入</button>
+    </div>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+<div class="wrap">
+  <div class="hd">
+    <h1><span>四川</span><em>苹果零售 · 服务链接率看板</em></h1>
+    <div class="meta">
+      本分公司 <b>53</b> 家门店
+      <span class="sep">·</span>数据源 <b>副本项目汇总表（setup）9月(35).xlsx</b>
+      <span class="sep">·</span>数据区间 <b>2026-09-01 ~ 2026-09-24</b>
+      <span class="sep">·</span>口径 <b>SETUP 服务 ÷ 四大主机 SO</b>
+    </div>
+  </div>
+
+  <div class="cards"><div class="card">
+      <div class="lbl">四大主机 SO<span class="desc">iPhone/iPad/Mac/Watch</span></div>
+      <div class="v">4479<small>台</small></div>
+    </div><div class="card">
+      <div class="lbl">设置服务数<span class="desc">SETUP_ 且时间合格</span></div>
+      <div class="v">1593<small>单</small></div>
+    </div><div class="card">
+      <div class="lbl">服务链接率<span class="desc">目标 ≥10%</span></div>
+      <div class="v">35.6<small>%</small></div>
+    </div><div class="card">
+      <div class="lbl">达标门店<span class="desc">完成率 ≥10%</span></div>
+      <div class="v">51<small>/ 53</small></div>
+    </div><div class="card sev">
+      <div class="lbl">异常门店<span class="desc">完成率 &lt;10%</span></div>
+      <div class="v">2<small>家</small></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hd"><h2>办事处对比</h2><span>按服务链接率降序</span></div>
+    <div class="offrow">
+      <div class="offname">成都<span>5家</span></div>
+      <div class="offbar"><i class="lv1" style="width:100.0%"></i></div>
+      <div class="offval">54.1%<span>设置172.0/SO318</span></div>
+    </div><div class="offrow">
+      <div class="offname">川东<span>12家</span></div>
+      <div class="offbar"><i class="lv1" style="width:71.0%"></i></div>
+      <div class="offval">38.4%<span>设置349.0/SO909</span></div>
+    </div><div class="offrow">
+      <div class="offname">重庆<span>24家</span></div>
+      <div class="offbar"><i class="lv1" style="width:63.4%"></i></div>
+      <div class="offval">34.3%<span>设置751.0/SO2189</span></div>
+    </div><div class="offrow">
+      <div class="offname">川南<span>3家</span></div>
+      <div class="offbar"><i class="lv1" style="width:59.8%"></i></div>
+      <div class="offval">32.4%<span>设置77.0/SO238</span></div>
+    </div><div class="offrow">
+      <div class="offname">川北<span>8家</span></div>
+      <div class="offbar"><i class="lv2" style="width:55.4%"></i></div>
+      <div class="offval">29.9%<span>设置212.0/SO708</span></div>
+    </div><div class="offrow">
+      <div class="offname">川西<span>1家</span></div>
+      <div class="offbar"><i class="lv2" style="width:50.6%"></i></div>
+      <div class="offval">27.4%<span>设置32.0/SO117</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hd"><h2>异常门店跟进</h2><span>完成率低于 20% 的 9 家</span></div>
+    <div class="fxgrid"><div class="fx lv-lv4">
+        <div class="fx-hd"><b>德来科技重庆梁平重百梁平商场店</b><span class="fx-tag">零设置</span></div>
+        <div class="fx-body">
+          <div><em>0.0%</em><small>完成率</small></div>
+          <div><em>0</em><small>设置单</small></div>
+          <div><em>52</em><small>主机SO</small></div>
+          <div><em>10</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">重庆 · 陈奉莲</div>
+      </div><div class="fx lv-lv4">
+        <div class="fx-hd"><b>酷思商贸重庆永川俊豪中央大街店</b><span class="fx-tag">零设置</span></div>
+        <div class="fx-body">
+          <div><em>0.0%</em><small>完成率</small></div>
+          <div><em>0</em><small>设置单</small></div>
+          <div><em>81</em><small>主机SO</small></div>
+          <div><em>16</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">重庆 · 蒋祖鉴</div>
+      </div><div class="fx lv-lv3">
+        <div class="fx-hd"><b>星光通讯达州开江店</b><span class="fx-tag">需关注</span></div>
+        <div class="fx-body">
+          <div><em>13.9%</em><small>完成率</small></div>
+          <div><em>11</em><small>设置单</small></div>
+          <div><em>79</em><small>主机SO</small></div>
+          <div><em>5</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">川东 · 达州</div>
+      </div><div class="fx lv-lv3">
+        <div class="fx-hd"><b>汇禾电子重庆大渡口万达广场店</b><span class="fx-tag">需关注</span></div>
+        <div class="fx-body">
+          <div><em>14.8%</em><small>完成率</small></div>
+          <div><em>8</em><small>设置单</small></div>
+          <div><em>54</em><small>主机SO</small></div>
+          <div><em>3</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">重庆 · 曾科</div>
+      </div><div class="fx lv-lv3">
+        <div class="fx-hd"><b>华翼通讯射洪万达广场店</b><span class="fx-tag">需关注</span></div>
+        <div class="fx-body">
+          <div><em>16.1%</em><small>完成率</small></div>
+          <div><em>9</em><small>设置单</small></div>
+          <div><em>56</em><small>主机SO</small></div>
+          <div><em>2</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">川东 · 舒铁</div>
+      </div><div class="fx lv-lv3">
+        <div class="fx-hd"><b>德来科技重庆万州鸿欧广场店</b><span class="fx-tag">需关注</span></div>
+        <div class="fx-body">
+          <div><em>17.9%</em><small>完成率</small></div>
+          <div><em>19</em><small>设置单</small></div>
+          <div><em>106</em><small>主机SO</small></div>
+          <div><em>2</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">重庆 · 陈奉莲</div>
+      </div><div class="fx lv-lv3">
+        <div class="fx-hd"><b>海佳科技泸州江阳爱琴海购物公园店</b><span class="fx-tag">需关注</span></div>
+        <div class="fx-body">
+          <div><em>18.2%</em><small>完成率</small></div>
+          <div><em>18</em><small>设置单</small></div>
+          <div><em>99</em><small>主机SO</small></div>
+          <div><em>2</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">川北 · 母勰伟</div>
+      </div><div class="fx lv-lv3">
+        <div class="fx-hd"><b>爱沣通讯重庆江津紫金天街店</b><span class="fx-tag">需关注</span></div>
+        <div class="fx-body">
+          <div><em>18.4%</em><small>完成率</small></div>
+          <div><em>16</em><small>设置单</small></div>
+          <div><em>87</em><small>主机SO</small></div>
+          <div><em>1</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">重庆 · 曾科</div>
+      </div><div class="fx lv-lv3">
+        <div class="fx-hd"><b>巧琪通信重庆南川万达巧琪科技店</b><span class="fx-tag">需关注</span></div>
+        <div class="fx-body">
+          <div><em>19.1%</em><small>完成率</small></div>
+          <div><em>20</em><small>设置单</small></div>
+          <div><em>105</em><small>主机SO</small></div>
+          <div><em>1</em><small>距20%缺口</small></div>
+        </div>
+        <div class="fx-ft">重庆 · 罗英</div>
+      </div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-hd"><h2>门店明细</h2><span>共 53 家 · 按完成率降序</span></div>
+    <div class="filters">
+      <input id="q" placeholder="搜索门店名称 / AppleID" oninput="render()">
+      <select id="lv" onchange="render()">
+        <option value="">全部</option>
+        <option value="lv4">异常（&lt;10%）</option>
+        <option value="lv3">关注（10-20%）</option>
+        <option value="lv12">优良（≥20%）</option>
+      </select>
+      <div class="cnt" id="cnt"></div>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th>#</th><th>门店名称</th><th>办事处</th><th>AppleID</th><th>主机SO</th>
+          <th>设置单</th><th title="全部 SETUP_，未筛时间合格">全部</th><th>完成率</th><th>判定</th><th class="wk">8/31-9/6</th><th class="wk">9/7-9/13</th><th class="wk">9/14-9/20</th><th class="wk">9/21-9/27</th>
+        </tr></thead>
+        <tbody id="tb"><tr>
+      <td class="num idx">1</td>
+      <td class="name" title="九方同兴南充西充鹭岛财富天街店">九方同兴南充西充鹭岛财富天街店</td>
+      <td class="off">川东</td>
+      <td class="num aid">4650732</td>
+      <td class="num">40</td>
+      <td class="num">35</td>
+      <td class="num ghost">35</td>
+      <td class="num rate lv1">87.5%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">5</td><td class="num wk">10</td><td class="num wk">18</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">2</td>
+      <td class="name" title="昊络通讯成都崇州圣沅唐人街购物中心店">昊络通讯成都崇州圣沅唐人街购物中心店</td>
+      <td class="off">成都</td>
+      <td class="num aid">3928217</td>
+      <td class="num">58</td>
+      <td class="num">49</td>
+      <td class="num ghost">50</td>
+      <td class="num rate lv1">84.5%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">11</td><td class="num wk">12</td><td class="num wk">20</td><td class="num wk">6</td>
+    </tr><tr>
+      <td class="num idx">3</td>
+      <td class="name" title="育丰霖坤重庆南岸茶园悦地广场店">育丰霖坤重庆南岸茶园悦地广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4048434</td>
+      <td class="num">110</td>
+      <td class="num">91</td>
+      <td class="num ghost">91</td>
+      <td class="num rate lv1">82.7%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">14</td><td class="num wk">34</td><td class="num wk">37</td><td class="num wk">6</td>
+    </tr><tr>
+      <td class="num idx">4</td>
+      <td class="name" title="立盛数码广安邻水店">立盛数码广安邻水店</td>
+      <td class="off">川东</td>
+      <td class="num aid">1522404</td>
+      <td class="num">75</td>
+      <td class="num">60</td>
+      <td class="num ghost">69</td>
+      <td class="num rate lv1">80.0%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">10</td><td class="num wk">5</td><td class="num wk">34</td><td class="num wk">11</td>
+    </tr><tr>
+      <td class="num idx">5</td>
+      <td class="name" title="保真通讯重庆店">保真通讯重庆店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">1949580</td>
+      <td class="num">54</td>
+      <td class="num">43</td>
+      <td class="num ghost">47</td>
+      <td class="num rate lv1">79.6%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">6</td><td class="num wk">6</td><td class="num wk">28</td><td class="num wk">3</td>
+    </tr><tr>
+      <td class="num idx">6</td>
+      <td class="name" title="汇禾电子重庆垫江明悦天街店">汇禾电子重庆垫江明悦天街店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4645586</td>
+      <td class="num">49</td>
+      <td class="num">32</td>
+      <td class="num ghost">32</td>
+      <td class="num rate lv1">65.3%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">7</td><td class="num wk">6</td><td class="num wk">13</td><td class="num wk">6</td>
+    </tr><tr>
+      <td class="num idx">7</td>
+      <td class="name" title="洪媒化川眉山彭山置信逸都城店">洪媒化川眉山彭山置信逸都城店</td>
+      <td class="off">成都</td>
+      <td class="num aid">4642328</td>
+      <td class="num">27</td>
+      <td class="num">15</td>
+      <td class="num ghost">16</td>
+      <td class="num rate lv1">55.6%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">2</td><td class="num wk">3</td><td class="num wk">8</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">8</td>
+      <td class="name" title="广炫通信重庆店">广炫通信重庆店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">1950281</td>
+      <td class="num">56</td>
+      <td class="num">31</td>
+      <td class="num ghost">41</td>
+      <td class="num rate lv1">55.4%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">13</td><td class="num wk">6</td><td class="num wk">7</td><td class="num wk">5</td>
+    </tr><tr>
+      <td class="num idx">9</td>
+      <td class="name" title="九嘉通讯重庆合川区财富广场店">九嘉通讯重庆合川区财富广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">3451379</td>
+      <td class="num">123</td>
+      <td class="num">68</td>
+      <td class="num ghost">70</td>
+      <td class="num rate lv1">55.3%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">20</td><td class="num wk">16</td><td class="num wk">27</td><td class="num wk">5</td>
+    </tr><tr>
+      <td class="num idx">10</td>
+      <td class="name" title="皓天通讯简阳店">皓天通讯简阳店</td>
+      <td class="off">成都</td>
+      <td class="num aid">2938165</td>
+      <td class="num">81</td>
+      <td class="num">44</td>
+      <td class="num ghost">46</td>
+      <td class="num rate lv1">54.3%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">7</td><td class="num wk">4</td><td class="num wk">25</td><td class="num wk">8</td>
+    </tr><tr>
+      <td class="num idx">11</td>
+      <td class="name" title="华翼通讯射洪凯立广场店">华翼通讯射洪凯立广场店</td>
+      <td class="off">川东</td>
+      <td class="num aid">4034092</td>
+      <td class="num">80</td>
+      <td class="num">40</td>
+      <td class="num ghost">77</td>
+      <td class="num rate lv1">50.0%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">15</td><td class="num wk">7</td><td class="num wk">15</td><td class="num wk">3</td>
+    </tr><tr>
+      <td class="num idx">12</td>
+      <td class="name" title="九方同兴南充顺庆1227购物广场店">九方同兴南充顺庆1227购物广场店</td>
+      <td class="off">川东</td>
+      <td class="num aid">3804517</td>
+      <td class="num">112</td>
+      <td class="num">55</td>
+      <td class="num ghost">62</td>
+      <td class="num rate lv1">49.1%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">13</td><td class="num wk">18</td><td class="num wk">20</td><td class="num wk">4</td>
+    </tr><tr>
+      <td class="num idx">13</td>
+      <td class="name" title="JINGMEI广安武胜店">JINGMEI广安武胜店</td>
+      <td class="off">川东</td>
+      <td class="num aid">1154093</td>
+      <td class="num">76</td>
+      <td class="num">37</td>
+      <td class="num ghost">37</td>
+      <td class="num rate lv1">48.7%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">9</td><td class="num wk">12</td><td class="num wk">11</td><td class="num wk">5</td>
+    </tr><tr>
+      <td class="num idx">14</td>
+      <td class="name" title="育丰霖坤重庆北碚区万达广场店">育丰霖坤重庆北碚区万达广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">3652793</td>
+      <td class="num">90</td>
+      <td class="num">42</td>
+      <td class="num ghost">50</td>
+      <td class="num rate lv1">46.7%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">9</td><td class="num wk">16</td><td class="num wk">15</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">15</td>
+      <td class="name" title="昊络通讯邛崃文脉坊店">昊络通讯邛崃文脉坊店</td>
+      <td class="off">成都</td>
+      <td class="num aid">4015957</td>
+      <td class="num">60</td>
+      <td class="num">27</td>
+      <td class="num ghost">30</td>
+      <td class="num rate lv1">45.0%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">8</td><td class="num wk">4</td><td class="num wk">9</td><td class="num wk">6</td>
+    </tr><tr>
+      <td class="num idx">16</td>
+      <td class="name" title="祥盛欣商贸什邡百盛广场店">祥盛欣商贸什邡百盛广场店</td>
+      <td class="off">川北</td>
+      <td class="num aid">4069060</td>
+      <td class="num">64</td>
+      <td class="num">28</td>
+      <td class="num ghost">32</td>
+      <td class="num rate lv1">43.8%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">7</td><td class="num wk">8</td><td class="num wk">9</td><td class="num wk">4</td>
+    </tr><tr>
+      <td class="num idx">17</td>
+      <td class="name" title="酷思商贸重庆永川万达广场店">酷思商贸重庆永川万达广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4425269</td>
+      <td class="num">144</td>
+      <td class="num">61</td>
+      <td class="num ghost">76</td>
+      <td class="num rate lv1">42.4%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">23</td><td class="num wk">20</td><td class="num wk">16</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">18</td>
+      <td class="name" title="爱沣通讯重庆奉节万达广场店">爱沣通讯重庆奉节万达广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4502729</td>
+      <td class="num">93</td>
+      <td class="num">38</td>
+      <td class="num ghost">40</td>
+      <td class="num rate lv1">40.9%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">7</td><td class="num wk">13</td><td class="num wk">15</td><td class="num wk">3</td>
+    </tr><tr>
+      <td class="num idx">19</td>
+      <td class="name" title="德来科技重庆万州海成长江之星店">德来科技重庆万州海成长江之星店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4562007</td>
+      <td class="num">104</td>
+      <td class="num">42</td>
+      <td class="num ghost">44</td>
+      <td class="num rate lv1">40.4%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">13</td><td class="num wk">7</td><td class="num wk">20</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">20</td>
+      <td class="name" title="洪媒化川简阳旭海时代广场店">洪媒化川简阳旭海时代广场店</td>
+      <td class="off">成都</td>
+      <td class="num aid">4048896</td>
+      <td class="num">92</td>
+      <td class="num">37</td>
+      <td class="num ghost">39</td>
+      <td class="num rate lv1">40.2%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">10</td><td class="num wk">8</td><td class="num wk">14</td><td class="num wk">5</td>
+    </tr><tr>
+      <td class="num idx">21</td>
+      <td class="name" title="极客数码德阳吾悦广场店">极客数码德阳吾悦广场店</td>
+      <td class="off">川北</td>
+      <td class="num aid">3428263</td>
+      <td class="num">155</td>
+      <td class="num">60</td>
+      <td class="num ghost">61</td>
+      <td class="num rate lv1">38.7%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">22</td><td class="num wk">7</td><td class="num wk">30</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">22</td>
+      <td class="name" title="果粉通讯宜宾南溪果粉数码店">果粉通讯宜宾南溪果粉数码店</td>
+      <td class="off">川南</td>
+      <td class="num aid">3479127</td>
+      <td class="num">82</td>
+      <td class="num">30</td>
+      <td class="num ghost">30</td>
+      <td class="num rate lv1">36.6%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">11</td><td class="num wk">4</td><td class="num wk">11</td><td class="num wk">4</td>
+    </tr><tr>
+      <td class="num idx">23</td>
+      <td class="name" title="汇禾电子重庆铜梁万达广场店">汇禾电子重庆铜梁万达广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">3741043</td>
+      <td class="num">118</td>
+      <td class="num">42</td>
+      <td class="num ghost">43</td>
+      <td class="num rate lv1">35.6%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">9</td><td class="num wk">15</td><td class="num wk">10</td><td class="num wk">8</td>
+    </tr><tr>
+      <td class="num idx">24</td>
+      <td class="name" title="天地通讯遂宁店">天地通讯遂宁店</td>
+      <td class="off">川东</td>
+      <td class="num aid">2123803</td>
+      <td class="num">72</td>
+      <td class="num">24</td>
+      <td class="num ghost">24</td>
+      <td class="num rate lv1">33.3%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">7</td><td class="num wk">4</td><td class="num wk">12</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">25</td>
+      <td class="name" title="广昊科技重庆永川HMC华茂中心店">广昊科技重庆永川HMC华茂中心店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">3394205</td>
+      <td class="num">144</td>
+      <td class="num">47</td>
+      <td class="num ghost">51</td>
+      <td class="num rate lv1">32.6%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">18</td><td class="num wk">12</td><td class="num wk">14</td><td class="num wk">3</td>
+    </tr><tr>
+      <td class="num idx">26</td>
+      <td class="name" title="龙飞智家资阳雁江摩根时代店">龙飞智家资阳雁江摩根时代店</td>
+      <td class="off">川南</td>
+      <td class="num aid">3888939</td>
+      <td class="num">93</td>
+      <td class="num">30</td>
+      <td class="num ghost">36</td>
+      <td class="num rate lv1">32.3%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">8</td><td class="num wk">6</td><td class="num wk">11</td><td class="num wk">5</td>
+    </tr><tr>
+      <td class="num idx">27</td>
+      <td class="name" title="羽翔通讯广元剑阁店">羽翔通讯广元剑阁店</td>
+      <td class="off">川北</td>
+      <td class="num aid">1408759</td>
+      <td class="num">84</td>
+      <td class="num">27</td>
+      <td class="num ghost">31</td>
+      <td class="num rate lv1">32.1%</td>
+      <td class="num lvt lv1">优</td>
+      <td class="num wk">3</td><td class="num wk">6</td><td class="num wk">17</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">28</td>
+      <td class="name" title="星月数码重庆店">星月数码重庆店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">1757084</td>
+      <td class="num">104</td>
+      <td class="num">31</td>
+      <td class="num ghost">32</td>
+      <td class="num rate lv2">29.8%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">8</td><td class="num wk">8</td><td class="num wk">13</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">29</td>
+      <td class="name" title="华翼通讯达州通川和悦广场店">华翼通讯达州通川和悦广场店</td>
+      <td class="off">川东</td>
+      <td class="num aid">4612182</td>
+      <td class="num">72</td>
+      <td class="num">20</td>
+      <td class="num ghost">20</td>
+      <td class="num rate lv2">27.8%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">3</td><td class="num wk">5</td><td class="num wk">10</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">30</td>
+      <td class="name" title="鑫桔子商贸遂宁船山城市梦想店">鑫桔子商贸遂宁船山城市梦想店</td>
+      <td class="off">川东</td>
+      <td class="num aid">3997410</td>
+      <td class="num">73</td>
+      <td class="num">20</td>
+      <td class="num ghost">20</td>
+      <td class="num rate lv2">27.4%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">7</td><td class="num wk">6</td><td class="num wk">6</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">31</td>
+      <td class="name" title="渝广通信凉山西昌攀西国贸广场店">渝广通信凉山西昌攀西国贸广场店</td>
+      <td class="off">川西</td>
+      <td class="num aid">4622800</td>
+      <td class="num">117</td>
+      <td class="num">32</td>
+      <td class="num ghost">39</td>
+      <td class="num rate lv2">27.4%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">9</td><td class="num wk">4</td><td class="num wk">17</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">32</td>
+      <td class="name" title="道信通讯内江隆昌店">道信通讯内江隆昌店</td>
+      <td class="off">川南</td>
+      <td class="num aid">1379107</td>
+      <td class="num">63</td>
+      <td class="num">17</td>
+      <td class="num ghost">18</td>
+      <td class="num rate lv2">27.0%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">5</td><td class="num wk">5</td><td class="num wk">4</td><td class="num wk">3</td>
+    </tr><tr>
+      <td class="num idx">33</td>
+      <td class="name" title="江鹰通讯广元青川浩达店">江鹰通讯广元青川浩达店</td>
+      <td class="off">川北</td>
+      <td class="num aid">3090687</td>
+      <td class="num">60</td>
+      <td class="num">16</td>
+      <td class="num ghost">20</td>
+      <td class="num rate lv2">26.7%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">4</td><td class="num wk">3</td><td class="num wk">5</td><td class="num wk">4</td>
+    </tr><tr>
+      <td class="num idx">34</td>
+      <td class="name" title="立讯通讯德阳绵竹时代广场店">立讯通讯德阳绵竹时代广场店</td>
+      <td class="off">川北</td>
+      <td class="num aid">4636622</td>
+      <td class="num">87</td>
+      <td class="num">23</td>
+      <td class="num ghost">29</td>
+      <td class="num rate lv2">26.4%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">7</td><td class="num wk">9</td><td class="num wk">4</td><td class="num wk">3</td>
+    </tr><tr>
+      <td class="num idx">35</td>
+      <td class="name" title="龙生通讯绵阳安县店">龙生通讯绵阳安县店</td>
+      <td class="off">川北</td>
+      <td class="num aid">1288691</td>
+      <td class="num">76</td>
+      <td class="num">20</td>
+      <td class="num ghost">22</td>
+      <td class="num rate lv2">26.3%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">6</td><td class="num wk">5</td><td class="num wk">8</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">36</td>
+      <td class="name" title="爱沣通讯重庆江津万达广场店">爱沣通讯重庆江津万达广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4213730</td>
+      <td class="num">103</td>
+      <td class="num">27</td>
+      <td class="num ghost">27</td>
+      <td class="num rate lv2">26.2%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">7</td><td class="num wk">3</td><td class="num wk">15</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">37</td>
+      <td class="name" title="德来科技重庆云阳滨江购物公园店">德来科技重庆云阳滨江购物公园店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4419323</td>
+      <td class="num">73</td>
+      <td class="num">18</td>
+      <td class="num ghost">20</td>
+      <td class="num rate lv2">24.7%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">6</td><td class="num wk">4</td><td class="num wk">6</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">38</td>
+      <td class="name" title="AICOO德阳凯旋国际上美广场店">AICOO德阳凯旋国际上美广场店</td>
+      <td class="off">川北</td>
+      <td class="num aid">3502575</td>
+      <td class="num">83</td>
+      <td class="num">20</td>
+      <td class="num ghost">27</td>
+      <td class="num rate lv2">24.1%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">4</td><td class="num wk">8</td><td class="num wk">6</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">39</td>
+      <td class="name" title="圣者之家科技广安武胜融恒时代广场店">圣者之家科技广安武胜融恒时代广场店</td>
+      <td class="off">川东</td>
+      <td class="num aid">3817521</td>
+      <td class="num">68</td>
+      <td class="num">16</td>
+      <td class="num ghost">17</td>
+      <td class="num rate lv2">23.5%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">5</td><td class="num wk">1</td><td class="num wk">9</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">40</td>
+      <td class="name" title="YGTX重庆云阳店">YGTX重庆云阳店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">2031861</td>
+      <td class="num">74</td>
+      <td class="num">17</td>
+      <td class="num ghost">20</td>
+      <td class="num rate lv2">23.0%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">4</td><td class="num wk">4</td><td class="num wk">9</td><td class="num wk">0</td>
+    </tr><tr>
+      <td class="num idx">41</td>
+      <td class="name" title="重百数码重庆长寿区重庆百货店">重百数码重庆长寿区重庆百货店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">3646884</td>
+      <td class="num">89</td>
+      <td class="num">20</td>
+      <td class="num ghost">33</td>
+      <td class="num rate lv2">22.5%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">5</td><td class="num wk">3</td><td class="num wk">10</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">42</td>
+      <td class="name" title="爱沣通讯重庆涪陵百汇广场店">爱沣通讯重庆涪陵百汇广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4642352</td>
+      <td class="num">85</td>
+      <td class="num">19</td>
+      <td class="num ghost">19</td>
+      <td class="num rate lv2">22.4%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">5</td><td class="num wk">4</td><td class="num wk">6</td><td class="num wk">4</td>
+    </tr><tr>
+      <td class="num idx">43</td>
+      <td class="name" title="朗融通讯重庆武隆店">朗融通讯重庆武隆店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">1561781</td>
+      <td class="num">91</td>
+      <td class="num">19</td>
+      <td class="num ghost">30</td>
+      <td class="num rate lv2">20.9%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">10</td><td class="num wk">2</td><td class="num wk">6</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">44</td>
+      <td class="name" title="宇翔科技阆中天街里店">宇翔科技阆中天街里店</td>
+      <td class="off">川东</td>
+      <td class="num aid">3700198</td>
+      <td class="num">106</td>
+      <td class="num">22</td>
+      <td class="num ghost">22</td>
+      <td class="num rate lv2">20.8%</td>
+      <td class="num lvt lv2">良</td>
+      <td class="num wk">5</td><td class="num wk">5</td><td class="num wk">9</td><td class="num wk">3</td>
+    </tr><tr>
+      <td class="num idx">45</td>
+      <td class="name" title="巧琪通信重庆南川万达巧琪科技店">巧琪通信重庆南川万达巧琪科技店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">2477748</td>
+      <td class="num">105</td>
+      <td class="num">20</td>
+      <td class="num ghost">29</td>
+      <td class="num rate lv3">19.1%</td>
+      <td class="num lvt lv3">关注</td>
+      <td class="num wk">7</td><td class="num wk">4</td><td class="num wk">7</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">46</td>
+      <td class="name" title="爱沣通讯重庆江津紫金天街店">爱沣通讯重庆江津紫金天街店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4631131</td>
+      <td class="num">87</td>
+      <td class="num">16</td>
+      <td class="num ghost">16</td>
+      <td class="num rate lv3">18.4%</td>
+      <td class="num lvt lv3">关注</td>
+      <td class="num wk">4</td><td class="num wk">3</td><td class="num wk">8</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">47</td>
+      <td class="name" title="海佳科技泸州江阳爱琴海购物公园店">海佳科技泸州江阳爱琴海购物公园店</td>
+      <td class="off">川北</td>
+      <td class="num aid">4098773</td>
+      <td class="num">99</td>
+      <td class="num">18</td>
+      <td class="num ghost">26</td>
+      <td class="num rate lv3">18.2%</td>
+      <td class="num lvt lv3">关注</td>
+      <td class="num wk">4</td><td class="num wk">6</td><td class="num wk">8</td><td class="num wk">0</td>
+    </tr><tr>
+      <td class="num idx">48</td>
+      <td class="name" title="德来科技重庆万州鸿欧广场店">德来科技重庆万州鸿欧广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">3681590</td>
+      <td class="num">106</td>
+      <td class="num">19</td>
+      <td class="num ghost">22</td>
+      <td class="num rate lv3">17.9%</td>
+      <td class="num lvt lv3">关注</td>
+      <td class="num wk">1</td><td class="num wk">5</td><td class="num wk">13</td><td class="num wk">0</td>
+    </tr><tr>
+      <td class="num idx">49</td>
+      <td class="name" title="华翼通讯射洪万达广场店">华翼通讯射洪万达广场店</td>
+      <td class="off">川东</td>
+      <td class="num aid">4076053</td>
+      <td class="num">56</td>
+      <td class="num">9</td>
+      <td class="num ghost">35</td>
+      <td class="num rate lv3">16.1%</td>
+      <td class="num lvt lv3">关注</td>
+      <td class="num wk">2</td><td class="num wk">3</td><td class="num wk">2</td><td class="num wk">2</td>
+    </tr><tr>
+      <td class="num idx">50</td>
+      <td class="name" title="汇禾电子重庆大渡口万达广场店">汇禾电子重庆大渡口万达广场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4156545</td>
+      <td class="num">54</td>
+      <td class="num">8</td>
+      <td class="num ghost">8</td>
+      <td class="num rate lv3">14.8%</td>
+      <td class="num lvt lv3">关注</td>
+      <td class="num wk">5</td><td class="num wk">1</td><td class="num wk">1</td><td class="num wk">1</td>
+    </tr><tr>
+      <td class="num idx">51</td>
+      <td class="name" title="星光通讯达州开江店">星光通讯达州开江店</td>
+      <td class="off">川东</td>
+      <td class="num aid">1312117</td>
+      <td class="num">79</td>
+      <td class="num">11</td>
+      <td class="num ghost">15</td>
+      <td class="num rate lv3">13.9%</td>
+      <td class="num lvt lv3">关注</td>
+      <td class="num wk">4</td><td class="num wk">2</td><td class="num wk">5</td><td class="num wk">0</td>
+    </tr><tr>
+      <td class="num idx">52</td>
+      <td class="name" title="德来科技重庆梁平重百梁平商场店">德来科技重庆梁平重百梁平商场店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4660485</td>
+      <td class="num">52</td>
+      <td class="num">0</td>
+      <td class="num ghost">0</td>
+      <td class="num rate lv4">0.0%</td>
+      <td class="num lvt lv4">异常</td>
+      <td class="num wk">0</td><td class="num wk">0</td><td class="num wk">0</td><td class="num wk">0</td>
+    </tr><tr>
+      <td class="num idx">53</td>
+      <td class="name" title="酷思商贸重庆永川俊豪中央大街店">酷思商贸重庆永川俊豪中央大街店</td>
+      <td class="off">重庆</td>
+      <td class="num aid">4672360</td>
+      <td class="num">81</td>
+      <td class="num">0</td>
+      <td class="num ghost">0</td>
+      <td class="num rate lv4">0.0%</td>
+      <td class="num lvt lv4">异常</td>
+      <td class="num wk">0</td><td class="num wk">0</td><td class="num wk">0</td><td class="num wk">0</td>
+    </tr></tbody>
+      </table>
+    </div>
+    <div class="rule">
+      <b>分子</b>：服务名称以 SETUP_ 开头、且「是否时间合格 = 是」的服务单销售数量 ｜
+      <b>分母</b>：商品一级分类为 iPhone / iPad / Mac / Apple Watch 的线下 SO 台数。<br>
+      <b>官方达标线 ≥10%</b>；为便于管理按四档显示：<span class="lv1">优 ≥30%</span> ·
+      <span class="lv2">良 20-30%</span> · <span class="lv3">关注 10-20%</span> ·
+      <span class="lv4">异常 &lt;10%</span>。教练服务（COACH_）不计入分子。
+    </div>
+  </div>
+
+  <div class="foot">数据源：副本项目汇总表（setup）9月(35).xlsx · SO 区间 2026-09-01 ~ 2026-09-23 · 本页由脚本自动生成</div>
+</div>
+
+<script>
+const PW_HASH = 2392125205;
+function h(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h;}
+function tryEnter(){
+  if(h(document.getElementById("pw").value) === PW_HASH){
+    sessionStorage.setItem("dash_ok","1");
+    document.getElementById("gate").style.display="none";
+  } else {
+    document.getElementById("gate-err").textContent="密码错误，请重试";
+  }
+}
+document.getElementById("gate-btn").onclick=tryEnter;
+document.getElementById("pw").addEventListener("keydown",e=>{if(e.key==="Enter")tryEnter();});
+if(sessionStorage.getItem("dash_ok")==="1")document.getElementById("gate").style.display="none";
+
+const ALLROWS = Array.from(document.querySelectorAll("#tb tr"));
+function render(){
+  const q = document.getElementById("q").value.trim();
+  const lv = document.getElementById("lv").value;
+  let shown=0, lv4=0, lv3=0;
+  ALLROWS.forEach(tr=>{
+    const name = tr.querySelector(".name").innerText;
+    const aid = tr.querySelector(".aid").innerText;
+    const cell = tr.querySelector("td.rate");
+    const c = cell.className;
+    const is4 = c.includes("lv4"), is3 = c.includes("lv3");
+    const is12 = c.includes("lv1") || c.includes("lv2");
+    const matchQ = !q || name.includes(q) || aid.includes(q);
+    let matchLv = true;
+    if(lv==="lv4") matchLv = is4;
+    else if(lv==="lv3") matchLv = is3;
+    else if(lv==="lv12") matchLv = is12;
+    const show = matchQ && matchLv;
+    tr.style.display = show ? "" : "none";
+    if(show){ shown++; if(is4)lv4++; if(is3)lv3++; }
+  });
+  document.getElementById("cnt").innerHTML = "筛出 <b>"+shown+"</b> 家 ｜ 异常 <b>"+lv4+"</b> · 关注 <b>"+lv3+"</b>";
+}
+render();
+</script>
+</body>
+</html>
