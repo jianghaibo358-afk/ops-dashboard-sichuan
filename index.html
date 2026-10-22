@@ -202,9 +202,15 @@ a.pl:hover{text-decoration:underline}
 
   <!-- ============ 门店运营 ============ -->
   <div class="tabpage" id="pg-ops">
-    <div class="ptitle">门店运营 · 三大专项指标</div>
+    <div class="ptitle">门店运营 · 专项指标</div>
 
     <div class="sec" style="margin-top:14px">
+      <h3>门店运营矩阵</h3>
+      <div class="hint">各门店运营指标一览 · 「—」= 暂无数据源（分期/换新/售后/大众点评/小程序会员/企微/MyCoach 待接入）</div>
+      <div class="tscroll"><table class="plain" id="opsmx-table"></table></div>
+    </div>
+
+    <div class="sec">
       <h3>订单执行率（分货 · 按 LOB）</h3>
       <div class="hint" id="ord-note">已确认分货 ÷ 总分货（台）· =100% 达标</div>
       <div class="kpis" style="grid-template-columns:repeat(6,1fr)" id="ord-kpis"></div>
@@ -226,8 +232,16 @@ a.pl:hover{text-decoration:underline}
 
   <!-- ============ 收官之战 ============ -->
   <div class="tabpage" id="pg-final">
-    <div class="ptitle">收官之战</div>
-    <div class="sec" style="margin-top:14px"><div class="placeholder">待复刻 · 参考站点恢复后补齐</div></div>
+    <div class="ptitle">收官之战 · Q4 目标达成</div>
+
+    <div class="kpis" style="grid-template-columns:repeat(4,1fr);margin-top:14px" id="final-sum"></div>
+
+    <div class="sec" style="margin-top:14px">
+      <h3>各负责人达成 <span style="font-size:11px;color:var(--ink3);font-weight:400">按达成率排序 · 点卡片看门店明细 · 再点收起</span></h3>
+      <div class="hint" id="final-note"></div>
+      <div class="repgrid" id="final-cards" style="grid-template-columns:repeat(6,1fr)"></div>
+      <div class="tscroll" id="final-detail-wrap" style="display:none;margin-top:12px"><table class="plain" id="final-detail"></table></div>
+    </div>
   </div>
 </div>
 
@@ -522,6 +536,69 @@ function lobCell(v){
     th += '<tr><td>'+s.name+'</td><td>'+fmt(s.inv)+'</td><td>'+fmt(s.sales)+'</td><td><b>'+s.turn.toFixed(1)+'</b></td><td class="'+cc+'">'+txt+'</td></tr>';
   });
   document.getElementById("turn-table").innerHTML = th;
+})();
+
+/* ============ 门店运营矩阵 ============ */
+(function(){
+  let mh = '<tr><th>门店</th><th>办事处</th><th>负责人</th><th>ACS 率</th><th>Setup 率</th><th>OTO 线上占比</th>'
+    +'<th style="color:var(--ink3)">分期</th><th style="color:var(--ink3)">换新</th><th style="color:var(--ink3)">售后</th><th style="color:var(--ink3)">大众点评</th><th style="color:var(--ink3)">小程序会员</th><th style="color:var(--ink3)">企微</th><th style="color:var(--ink3)">MyCoach</th></tr>';
+  D.stores.slice().sort((a,b)=>a.off>b.off?1:-1).forEach(s=>{
+    mh += '<tr><td>'+s.name+'</td><td>'+s.off+'</td><td>'+s.rep+'</td>'
+      +'<td class="'+(s.acsR!=null&&s.acsR>=15?'lvg':'')+'">'+(s.acsR!=null?(s.acsR*100).toFixed(1)+'%':'—')+'</td>'
+      +'<td class="'+(s.setup!=null&&s.setup>=10?'lvg':'')+'">'+(s.setup!=null?s.setup.toFixed(1)+'%':'—')+'</td>'
+      +'<td>'+(s.onl*100).toFixed(1)+'%</td>'
+      +'<td style="color:var(--ink3)">—</td><td style="color:var(--ink3)">—</td><td style="color:var(--ink3)">—</td><td style="color:var(--ink3)">—</td><td style="color:var(--ink3)">—</td><td style="color:var(--ink3)">—</td><td style="color:var(--ink3)">—</td></tr>';
+  });
+  document.getElementById("opsmx-table").innerHTML = mh;
+})();
+
+/* ============ 收官之战 · Q4 目标达成 ============ */
+(function(){
+  /* Q4目标暂按 10月月目标×3 估算；达成 = 10月SO（截至数据日，全渠道） */
+  const DAY_PAST = parseInt(D.meta.asOf.slice(8,10)) + 0;   // 10月已过天数（Q4=10/1起算）
+  const TP = Math.round(DAY_PAST/92*1000)/10;
+  const reps = D.reps.map(r=>{
+    const ss = D.stores.filter(s=>s.rep===r.name);
+    const g = ss.reduce((a,s)=>a+(s.g||0)*3,0);   // ×3 估算
+    const ach = ss.reduce((a,s)=>a+s.a,0);
+    return {name:r.name, off:r.off, n:ss.length, g:g, a:ach, r: g?ach/g*100:0, stores:ss};
+  }).sort((x,y)=>y.r-x.r);
+  const tg = reps.reduce((a,r)=>a+r.g,0), ta = reps.reduce((a,r)=>a+r.a,0);
+  const tr = tg?ta/tg*100:0;
+  document.getElementById("final-note").textContent =
+    "口径：目标 = Q4 金额计划（暂按 10月月目标 ×3 估算，正式 Q4 计划下发后替换）；达成 = SO 金额（全渠道，截至 "+D.meta.asOf.replaceAll("-","/")+"）；时间进度 = 已过 "+DAY_PAST+"/92 天";
+  document.getElementById("final-sum").innerHTML =
+    '<div class="kpi"><div class="t">Q4 目标</div><div class="v">'+fmt(tg,0)+'<small>万元</small></div><div class="s">10月目标×3 估算</div></div>'
+    +'<div class="kpi"><div class="t">已达成</div><div class="v">'+fmt(ta,1)+'<small>万元</small></div><div class="s">SO 全渠道累计</div></div>'
+    +'<div class="kpi"><div class="t">阶段达成率</div><div class="v '+(tr>=TP?"g":"")+'">'+tr.toFixed(1)+'<small>%</small></div><div class="s">时间进度 '+TP+'% · <b class="'+(tr>=TP?"up":"dn")+'">'+(tr-TP>=0?"+":"")+(tr-TP).toFixed(1)+'pt</b></div></div>'
+    +'<div class="kpi"><div class="t">数据截至</div><div class="v" style="font-size:22px">'+D.meta.asOf.replaceAll("-","/")+'</div><div class="s">Q4 第 '+DAY_PAST+' 天 / 92 天</div></div>';
+  let sel = "";
+  document.getElementById("final-cards").innerHTML = reps.map(r=>
+    '<div class="oc" data-nm="'+r.name+'"><div class="nm">'+r.name+' · '+r.off+'</div>'
+    +'<div class="rt '+cls(r.r)+'">'+r.r.toFixed(1)+'%</div>'
+    +'<div class="d">'+r.n+' 家店 · 达成 <em>'+fmt(r.a,1)+'</em> / 目标 '+fmt(r.g,0)+' 万</div>'
+    +'<div class="lead '+(r.r-TP>=0?"up":"dn")+'">'+(r.r-TP>=0?"领先 ":"落后 ")+Math.abs(r.r-TP).toFixed(1)+' pt</div></div>').join("");
+  document.querySelectorAll("#final-cards .oc").forEach(c=>{
+    c.onclick=()=>{
+      const nm=c.dataset.nm;
+      sel = (sel===nm?"":nm);
+      document.querySelectorAll("#final-cards .oc").forEach(x=>x.classList.toggle("on",x.dataset.nm===sel));
+      const w=document.getElementById("final-detail-wrap");
+      if(!sel){w.style.display="none";return;}
+      const r=reps.find(x=>x.name===sel);
+      let dh='<tr><th>门店</th><th>目标(万元·Q4估算)</th><th>达成(万元)</th><th>达成率</th><th>vs 时间</th></tr>';
+      r.stores.slice().sort((a,b)=>(b.a/(b.g||1))-(a.a/(a.g||1))).forEach(s=>{
+        if(s.g==null){
+          dh+='<tr><td>'+s.name+'</td><td style="color:var(--ink3)">无目标</td><td>'+fmt(s.a,1)+'</td><td style="color:var(--ink3)">—</td><td style="color:var(--ink3)">—</td></tr>';
+          return;
+        }
+        const g=s.g*3, rr=g?s.a/g*100:0, p=rr-TP;
+        dh+='<tr><td>'+s.name+'</td><td>'+fmt(g,0)+'</td><td>'+fmt(s.a,1)+'</td><td><b>'+rr.toFixed(1)+'%</b></td><td class="'+(p>=0?"up":"dn")+'">'+(p>=0?"+":"")+p.toFixed(1)+'pt</td></tr>';
+      });
+      document.getElementById("final-detail").innerHTML=dh;
+      w.style.display="block";
+    };
+  });
 })();
 </script>
 </body>
