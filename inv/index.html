@@ -52,7 +52,7 @@
 <div class="wrap">
   <div class="hd">
     <h1>苹果零售 · <em>库存拆分看板</em>（四川）</h1>
-    <div class="meta">库存日期 2026-10-23 ｜ 生成于 2026-10-23 09:29 ｜ 点击任意卡片进入明细</div>
+    <div class="meta">库存日期 2026-10-23 ｜ 生成于 2026-10-23 10:16 ｜ 点击任意卡片进入明细</div>
   </div>
   <div class="grid" id="grid"></div>
   <div class="foot">
@@ -75,7 +75,7 @@
   };
   document.getElementById("pw").addEventListener("keydown", function(e){ if(e.key==="Enter"){ document.getElementById("gate-btn").click(); } });
 
-  var CARDS = [{"k": "summary", "n": "川渝汇总", "note": "全部 54 家门店 · 全品类", "rows": 3096, "stores": 54, "avail": 7052, "transit": 726, "iphone": 4339}, {"k": "chengdu", "n": "成都办事处", "note": "5 家门店 · 全品类", "rows": 278, "stores": 5, "avail": 664, "transit": 46, "iphone": 427}, {"k": "chuanbei", "n": "川北办事处", "note": "8 家门店 · 全品类", "rows": 475, "stores": 8, "avail": 1051, "transit": 53, "iphone": 596}, {"k": "chuandong", "n": "川东办事处", "note": "12 家门店 · 全品类", "rows": 756, "stores": 12, "avail": 1731, "transit": 158, "iphone": 1005}, {"k": "chuannan", "n": "川南办事处", "note": "3 家门店 · 全品类", "rows": 176, "stores": 3, "avail": 348, "transit": 47, "iphone": 182}, {"k": "chuanxi", "n": "川西办事处", "note": "2 家门店 · 全品类", "rows": 83, "stores": 2, "avail": 176, "transit": 52, "iphone": 87}, {"k": "chongqing", "n": "重庆办事处", "note": "24 家门店 · 全品类", "rows": 1328, "stores": 24, "avail": 3082, "transit": 370, "iphone": 2042}, {"k": "hongfan", "n": "宏帆 10 店", "note": "仅 iPhone", "rows": 309, "stores": 10, "avail": 804, "transit": 89, "iphone": 804}, {"k": "fengyang", "n": "风扬 3 店", "note": "仅 iPhone", "rows": 86, "stores": 3, "avail": 184, "transit": 15, "iphone": 184}];
+  var CARDS = [{"k": "summary", "n": "川渝汇总", "note": "全部 54 家门店 · 全品类", "rows": 3096, "stores": 54, "avail": 7052, "transit": 726, "iphone": 4339}, {"k": "ch-jagcgg", "n": "成都办事处", "note": "5 家门店 · 全品类", "rows": 278, "stores": 5, "avail": 664, "transit": 46, "iphone": 427}, {"k": "ch-32zgxu", "n": "川北办事处", "note": "8 家门店 · 全品类", "rows": 475, "stores": 8, "avail": 1051, "transit": 53, "iphone": 596}, {"k": "ch-6a7f84", "n": "川东办事处", "note": "12 家门店 · 全品类", "rows": 756, "stores": 12, "avail": 1731, "transit": 158, "iphone": 1005}, {"k": "ch-bqq0v0", "n": "川南办事处", "note": "3 家门店 · 全品类", "rows": 176, "stores": 3, "avail": 348, "transit": 47, "iphone": 182}, {"k": "ch-pqz1i2", "n": "川西办事处", "note": "2 家门店 · 全品类", "rows": 83, "stores": 2, "avail": 176, "transit": 52, "iphone": 87}, {"k": "ch-1rwds4", "n": "重庆办事处", "note": "24 家门店 · 全品类", "rows": 1328, "stores": 24, "avail": 3082, "transit": 370, "iphone": 2042}, {"k": "ho-hmed5z", "n": "宏帆 10 店", "note": "仅 iPhone", "rows": 309, "stores": 10, "avail": 804, "transit": 89, "iphone": 804}, {"k": "fe-2z4c5k", "n": "风扬 3 店", "note": "仅 iPhone", "rows": 86, "stores": 3, "avail": 184, "transit": 15, "iphone": 184}];
   function fmt(n){ return n.toLocaleString("zh-CN"); }
   document.getElementById("grid").innerHTML = CARDS.map(function(c){
     return '<a class="card" href="'+c.k+'.html">'+
