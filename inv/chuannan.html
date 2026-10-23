@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>川南办事处 · 库存明细 · 2026-10-23</title>
+<style>
+  :root{
+    --bg:#eef3fa; --card:#fff; --line:#dfe8f5; --line2:#eef3fb;
+    --ink:#0b2545; --ink2:#3d5674; --ink3:#7b8ea8;
+    --blue:#1668dc; --blue-soft:#e8f1ff;
+    --ok:#079455; --warn:#b78103; --sev:#d92d20;
+  }
+  *{box-sizing:border-box; -webkit-text-size-adjust:100%;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+       font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; font-size:14px;}
+  .wrap{max-width:1400px; margin:0 auto; padding:16px 14px 40px;}
+  .hd h1{margin:0 0 4px; font-size:20px; font-weight:700;}
+  .hd h1 em{font-style:normal; color:var(--blue);}
+  .meta{color:var(--ink3); font-size:12px; margin-bottom:12px;}
+  .nav{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 14px;}
+  .chip{display:inline-block; padding:5px 11px; border-radius:14px; background:#fff; border:1px solid var(--line);
+        color:var(--ink2); font-size:12px; text-decoration:none;}
+  .chip:hover{border-color:var(--blue); color:var(--blue);}
+  .chip.cur{background:var(--blue); border-color:var(--blue); color:#fff; font-weight:600;}
+  .cards{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:14px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
+  .card .lb{color:var(--ink3); font-size:12px;}
+  .card .vl{font-size:22px; font-weight:700; line-height:1.25;}
+  .card .sub{font-size:11px; color:var(--ink3);}
+  .bar{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:10px;
+       display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+  .bar select,.bar input[type=text]{height:30px; border:1px solid var(--line); border-radius:6px; padding:0 8px;
+       font-size:13px; background:#fff; color:var(--ink);}
+  .bar input[type=text]{min-width:180px;}
+  .bar label.ck{display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--ink2); cursor:pointer;}
+  .btn{height:30px; padding:0 12px; border-radius:6px; border:1px solid var(--blue); background:var(--blue);
+       color:#fff; font-size:13px; cursor:pointer;}
+  .btn.gray{background:#fff; color:var(--ink2); border-color:var(--line);}
+  .stat{color:var(--ink2); font-size:13px; margin:2px 0 8px;}
+  .stat b{color:var(--ink);}
+  .tbbox{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:auto; max-height:72vh;}
+  table{border-collapse:collapse; width:100%; font-size:13px;}
+  th{position:sticky; top:0; background:#f6f9ff; border-bottom:1px solid var(--line); padding:8px 8px;
+     text-align:left; white-space:nowrap; color:var(--ink2); font-weight:600; z-index:2;}
+  td{padding:7px 8px; border-bottom:1px solid var(--line2); vertical-align:top;}
+  tr:hover td{background:#f8fbff;}
+  .num{text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  .av0{color:var(--ink3);}
+  .tag{display:inline-block; padding:1px 6px; border-radius:4px; font-size:11px; border:1px solid transparent;}
+  .tag.iphone{background:#e8f1ff; color:var(--blue); border-color:#cfe2ff;}
+  .tag.lob{background:#f4f6f9; color:var(--ink2); border-color:var(--line);}
+  .desc{color:var(--ink2);}
+  .empty{padding:26px; text-align:center; color:var(--ink3);}
+  /* 密码门 */
+  #gate{position:fixed; inset:0; z-index:99; display:flex; align-items:center; justify-content:center;
+        background:linear-gradient(160deg,#eef3fa,#dfe8f5);}
+  .gate-card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:26px 28px; width:300px; text-align:center;}
+  .gate-card h2{margin:0 0 6px; font-size:17px;}
+  .gate-card p{margin:0 0 14px; color:var(--ink3); font-size:12px;}
+  .gate-card input{width:100%; height:36px; border:1px solid var(--line); border-radius:8px; padding:0 10px; font-size:14px; margin-bottom:10px;}
+  .gate-card button{width:100%; height:36px; border:0; border-radius:8px; background:var(--blue); color:#fff; font-size:14px; cursor:pointer;}
+  .gate-err{color:var(--sev); font-size:12px; margin-top:8px; height:16px;}
+  @media (max-width:900px){
+    .cards{grid-template-columns:repeat(2,1fr);}
+    .bar select,.bar input[type=text]{width:100%;}
+    th,td{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="gate-card">
+    <h2>川南办事处 · 库存明细</h2>
+    <p>请输入访问密码</p>
+    <input type="password" id="pw" placeholder="密码" autocomplete="off">
+    <button id="gate-btn">进入</button>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hd">
+    <h1><em>川南办事处</em> · 库存明细看板</h1>
+    <div class="meta">库存日期 2026-10-23 ｜ 3 家门店 · 全品类 ｜ 生成于 2026-10-23 09:29</div>
+  </div>
+  <div class="nav">
+    <a class="chip" href="index.html">← 总入口</a>
+    <a class="chip" href="summary.html">川渝汇总</a>
+    <a class="chip" href="chengdu.html">成都办事处</a>
+    <a class="chip" href="chuanbei.html">川北办事处</a>
+    <a class="chip" href="chuandong.html">川东办事处</a>
+    <a class="chip cur" href="chuannan.html">川南办事处</a>
+    <a class="chip" href="chuanxi.html">川西办事处</a>
+    <a class="chip" href="chongqing.html">重庆办事处</a>
+    <a class="chip" href="hongfan.html">宏帆 10 店</a>
+    <a class="chip" href="fengyang.html">风扬 3 店</a>
+  </div>
+  <div class="cards" id="cards"></div>
+
+  <div class="bar">
+    <select id="f-store"><option value="">全部门店</option></select>
+    <select id="f-cat"><option value="">全部大类</option></select>
+    <select id="f-series"><option value="">全部系列</option></select>
+    <select id="f-lob"><option value="">全部 LOB</option></select>
+    <select id="f-spec"><option value="">全部规格</option></select>
+    <input type="text" id="f-kw" placeholder="搜索：型号 / 编码 / 物料描述">
+    <label class="ck"><input type="checkbox" id="f-only"> 仅看有货(可用>0)</label>
+    <select id="f-sort">
+      <option value="a_desc">按可用↓</option>
+      <option value="a_asc">按可用↑</option>
+      <option value="s_asc">按门店</option>
+      <option value="d_asc">按物料描述</option>
+    </select>
+    <button class="btn" id="btn-csv">导出 CSV</button>
+    <button class="btn gray" id="btn-reset">重置</button>
+  </div>
+
+  <div class="stat" id="stat"></div>
+  <div class="tbbox">
+    <table>
+      <thead><tr>
+        <th>门店</th><th>商品编码</th><th>大类</th><th>系列</th><th>物料描述</th><th>LOB</th>
+        <th class="num">可用</th><th class="num">在途</th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+    <div class="empty" id="empty" style="display:none">没有符合条件的数据</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var HASH = 2392125205, KEY = "inv_pw_ok";
+  function djb2(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
+  var gate = document.getElementById("gate");
+  function unlock(){ try{sessionStorage.setItem(KEY,"1");}catch(e){} gate.style.display="none"; }
+  try{ if(sessionStorage.getItem(KEY)==="1"){ unlock(); } }catch(e){}
+  document.getElementById("gate-btn").onclick = function(){
+    var v = document.getElementById("pw").value.trim();
+    if(djb2(v)===HASH){ unlock(); }
+    else { document.getElementById("gate-err").textContent = "密码不正确"; }
+  };
+  document.getElementById("pw").addEventListener("keydown", function(e){ if(e.key==="Enter"){ document.getElementById("gate-btn").click(); } });
+
+  var ROWS = [{"s": "道信通讯内江隆昌店", "c": "MPNY3CH/A", "a": 1, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods (第三代) （配闪电充电盒）", "g": "耳机", "m": "AirPods (第三代) （配闪电充电盒）", "p": ""}, {"s": "道信通讯内江隆昌店", "c": "MTJV3CH/A", "a": 1, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods Pro (第二代)/搭配充电盒 (USB-C)", "g": "耳机", "m": "AirPods Pro (第二代)", "p": "搭配充电盒 (USB-C)"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MTJV3CH/A", "a": 1, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods Pro (第二代)/搭配充电盒 (USB-C)", "g": "耳机", "m": "AirPods Pro (第二代)", "p": "搭配充电盒 (USB-C)"}, {"s": "道信通讯内江隆昌店", "c": "MTL73CH/A", "a": 1, "t": 0, "l": "Mac", "d": "笔记本/APPLE/MacBook Pro 14吋/512G/深空灰色/M3", "g": "笔记本", "m": "MacBook Pro 14吋", "p": "512G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MWV13CH/A", "a": 1, "t": 0, "l": "Mac", "d": "台式机/APPLE/iMac 24吋M4/10核16+256G/蓝（V13)", "g": "台式机", "m": "iMac 24吋M4", "p": "10核16+256G"}, {"s": "道信通讯内江隆昌店", "c": "MXP63CH/A", "a": 4, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods/4代", "g": "耳机", "m": "AirPods", "p": "4代"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MXP63CH/A", "a": 1, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods/4代", "g": "耳机", "m": "AirPods", "p": "4代"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MXP63CH/A", "a": 2, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods/4代", "g": "耳机", "m": "AirPods", "p": "4代"}, {"s": "道信通讯内江隆昌店", "c": "MXP93CH/A", "a": 5, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods/4代(支持主动降噪)", "g": "耳机", "m": "AirPods", "p": "4代(支持主动降噪)"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MXP93CH/A", "a": 2, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods/4代(支持主动降噪)", "g": "耳机", "m": "AirPods", "p": "4代(支持主动降噪)"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MXP93CH/A", "a": 1, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods/4代(支持主动降噪)", "g": "耳机", "m": "AirPods", "p": "4代(支持主动降噪)"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MXUD3CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 16 Plus/128G/群青色", "g": "手机", "m": "iPhone 16 Plus", "p": "128G"}, {"s": "道信通讯内江隆昌店", "c": "MXUG3CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 16 Plus/256G/白色", "g": "手机", "m": "iPhone 16 Plus", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MXN63CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad Mini7/128G/深空灰色", "g": "PAD", "m": "iPad Mini7", "p": "128G"}, {"s": "道信通讯内江隆昌店", "c": "MD3Y4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/128G/银色", "g": "PAD", "m": "iPad11", "p": "128G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MD3Y4CH/A", "a": 2, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/128G/银色", "g": "PAD", "m": "iPad11", "p": "128G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MD3Y4CH/A", "a": 1, "t": 1, "l": "iPad", "d": "PAD/APPLE/iPad11/128G/银色", "g": "PAD", "m": "iPad11", "p": "128G"}, {"s": "道信通讯内江隆昌店", "c": "MD4A4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/128G/蓝色", "g": "PAD", "m": "iPad11", "p": "128G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MD4A4CH/A", "a": 2, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/128G/蓝色", "g": "PAD", "m": "iPad11", "p": "128G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MD4E4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/128G/粉色", "g": "PAD", "m": "iPad11", "p": "128G"}, {"s": "道信通讯内江隆昌店", "c": "MD4G4CH/A", "a": 2, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/256G/银色", "g": "PAD", "m": "iPad11", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MD4G4CH/A", "a": 2, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/256G/银色", "g": "PAD", "m": "iPad11", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MD4G4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/256G/银色", "g": "PAD", "m": "iPad11", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MD4H4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/256G/蓝色", "g": "PAD", "m": "iPad11", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MD4H4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/256G/蓝色", "g": "PAD", "m": "iPad11", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MD4H4CH/A", "a": 3, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/256G/蓝色", "g": "PAD", "m": "iPad11", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MD4P4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPad11/256G/粉色", "g": "PAD", "m": "iPad11", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MEHD4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/SE3 GPS 40MM/午夜铝壳午夜色运动型表带-M/L", "g": "手表", "m": "SE3 GPS 40MM", "p": "午夜铝壳午夜色运动型表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MEHR4CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/SE3 GPS 44MM/午夜铝壳午夜色运动型表带-M/L", "g": "手表", "m": "SE3 GPS 44MM", "p": "午夜铝壳午夜色运动型表带-M"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MEHR4CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/SE3 GPS 44MM/午夜铝壳午夜色运动型表带-M/L", "g": "手表", "m": "SE3 GPS 44MM", "p": "午夜铝壳午夜色运动型表带-M"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MEHR4CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/SE3 GPS 44MM/午夜铝壳午夜色运动型表带-M/L", "g": "手表", "m": "SE3 GPS 44MM", "p": "午夜铝壳午夜色运动型表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MDWK4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "笔记本/APPLE/MBN 13寸/6+5核/8+512G/触控蓝/A18Pro", "g": "笔记本", "m": "MBN 13寸", "p": "6+5核"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MDWK4CH/A", "a": 2, "t": 0, "l": "iPad", "d": "笔记本/APPLE/MBN 13寸/6+5核/8+512G/触控蓝/A18Pro", "g": "笔记本", "m": "MBN 13寸", "p": "6+5核"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MDWK4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "笔记本/APPLE/MBN 13寸/6+5核/8+512G/触控蓝/A18Pro", "g": "笔记本", "m": "MBN 13寸", "p": "6+5核"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MDWL4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "笔记本/APPLE/MBN 13寸/6+5核/8+256G/粉/A18Pro", "g": "笔记本", "m": "MBN 13寸", "p": "6+5核"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MDWM4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "笔记本/APPLE/MBA 13寸/10+8核/16+512G/银/M5", "g": "笔记本", "m": "MBA 13寸", "p": "10+8核"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MDWN4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "笔记本/APPLE/MBA 13寸/10+10核/16+1T/银/M5", "g": "笔记本", "m": "MBA 13寸", "p": "10+10核"}, {"s": "道信通讯内江隆昌店", "c": "MEU94CH/B", "a": 3, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 42MM/亮黑铝壳黑色运动型表带-S/M", "g": "手表", "m": "S11 GPS 42MM", "p": "亮黑铝壳黑色运动型表带-S"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MEU94CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 42MM/亮黑铝壳黑色运动型表带-S/M", "g": "手表", "m": "S11 GPS 42MM", "p": "亮黑铝壳黑色运动型表带-S"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MEU94CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 42MM/亮黑铝壳黑色运动型表带-S/M", "g": "手表", "m": "S11 GPS 42MM", "p": "亮黑铝壳黑色运动型表带-S"}, {"s": "道信通讯内江隆昌店", "c": "MEUG4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 42MM/深空灰铝壳黑色运动型表带-S/M", "g": "手表", "m": "S11 GPS 42MM", "p": "深空灰铝壳黑色运动型表带-S"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MEUG4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 42MM/深空灰铝壳黑色运动型表带-S/M", "g": "手表", "m": "S11 GPS 42MM", "p": "深空灰铝壳黑色运动型表带-S"}, {"s": "道信通讯内江隆昌店", "c": "MEVG4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 46MM/亮黑铝壳黑色运动型表带-S/M", "g": "手表", "m": "S11 GPS 46MM", "p": "亮黑铝壳黑色运动型表带-S"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MEVG4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 46MM/亮黑铝壳黑色运动型表带-S/M", "g": "手表", "m": "S11 GPS 46MM", "p": "亮黑铝壳黑色运动型表带-S"}, {"s": "道信通讯内江隆昌店", "c": "MEVH4CH/B", "a": 4, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 46MM/亮黑铝壳黑色运动型表带-M/L", "g": "手表", "m": "S11 GPS 46MM", "p": "亮黑铝壳黑色运动型表带-M"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MEVH4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 46MM/亮黑铝壳黑色运动型表带-M/L", "g": "手表", "m": "S11 GPS 46MM", "p": "亮黑铝壳黑色运动型表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MEVP4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 46MM/深空灰铝壳黑色运动型表带-M/L", "g": "手表", "m": "S11 GPS 46MM", "p": "深空灰铝壳黑色运动型表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MEVU4CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/S11 GPS 46MM/玫瑰金铝壳淡桃粉色运动型带-M/L", "g": "手表", "m": "S11 GPS 46MM", "p": "玫瑰金铝壳淡桃粉色运动型带-M"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MDE04CH/A", "a": 1, "t": 0, "l": "Mac", "d": "笔记本/APPLE/MBA 15寸/10+10核/16+512G/银/M5", "g": "笔记本", "m": "MBA 15寸", "p": "10+10核"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MDE14CH/A", "a": 1, "t": 0, "l": "Mac", "d": "笔记本/APPLE/MBA 15寸/10+10核/24+1T/银/M5", "g": "笔记本", "m": "MBA 15寸", "p": "10+10核"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MFHP4CH/A", "a": 4, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods Pro（第三代）", "g": "耳机", "m": "AirPods Pro（第三代）", "p": ""}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MFHP4CH/A", "a": 12, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods Pro（第三代）", "g": "耳机", "m": "AirPods Pro（第三代）", "p": ""}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG314CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone Air/256G/深空黑色", "g": "手机", "m": "iPhone Air", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG334CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone Air/256G/云白色", "g": "手机", "m": "iPhone Air", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG344CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone Air/256G/浅金色", "g": "手机", "m": "iPhone Air", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MG364CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone Air/256G/天蓝色", "g": "手机", "m": "iPhone Air", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG364CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone Air/256G/天蓝色", "g": "手机", "m": "iPhone Air", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG364CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone Air/256G/天蓝色", "g": "手机", "m": "iPhone Air", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MG8T4CH/A", "a": 5, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro/256G/银色", "g": "手机", "m": "iPhone 17 Pro", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG8T4CH/A", "a": 5, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro/256G/银色", "g": "手机", "m": "iPhone 17 Pro", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG8T4CH/A", "a": 19, "t": 4, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro/256G/银色", "g": "手机", "m": "iPhone 17 Pro", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MG8U4CH/A", "a": 4, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro/256G/星宇橙色", "g": "手机", "m": "iPhone 17 Pro", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG8U4CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro/256G/星宇橙色", "g": "手机", "m": "iPhone 17 Pro", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG8U4CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro/256G/星宇橙色", "g": "手机", "m": "iPhone 17 Pro", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG8V4CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro/256G/深蓝色", "g": "手机", "m": "iPhone 17 Pro", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG034CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro Max/256G/银色", "g": "手机", "m": "iPhone 17 Pro Max", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MG044CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro Max/256G/星宇橙色", "g": "手机", "m": "iPhone 17 Pro Max", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG044CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro Max/256G/星宇橙色", "g": "手机", "m": "iPhone 17 Pro Max", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG044CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro Max/256G/星宇橙色", "g": "手机", "m": "iPhone 17 Pro Max", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG054CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro Max/256G/深蓝色", "g": "手机", "m": "iPhone 17 Pro Max", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MG064CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro Max/512G/银色", "g": "手机", "m": "iPhone 17 Pro Max", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MG074CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17 Pro Max/512G/星宇橙色", "g": "手机", "m": "iPhone 17 Pro Max", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MG6W4CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/黑色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG6W4CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/黑色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG6W4CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/黑色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MG6X4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/白色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MG6X4CH/A", "a": 3, "t": 2, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/白色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG6X4CH/A", "a": 4, "t": 16, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/白色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG6Y4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/青雾蓝色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG704CH/A", "a": 12, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/薰衣草紫色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MG714CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17/256G/鼠尾草绿色", "g": "手机", "m": "iPhone 17", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MG724CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 17/512G/黑色", "g": "手机", "m": "iPhone 17", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MDHA4CH/A", "a": 1, "t": 0, "l": "Mac", "d": "笔记本/APPLE/MBA 13寸/10+8核/16+512G/星光/M5", "g": "笔记本", "m": "MBA 13寸", "p": "10+8核"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MDHA4CH/A", "a": 1, "t": 0, "l": "Mac", "d": "笔记本/APPLE/MBA 13寸/10+8核/16+512G/星光/M5", "g": "笔记本", "m": "MBA 13寸", "p": "10+8核"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MDHE4CH/A", "a": 1, "t": 0, "l": "Mac", "d": "笔记本/APPLE/MBA 13寸/10+8核/16+512G/午夜/M5", "g": "笔记本", "m": "MBA 13寸", "p": "10+8核"}, {"s": "道信通讯内江隆昌店", "c": "MDHH4CH/A", "a": 1, "t": 0, "l": "Mac", "d": "笔记本/APPLE/MBA 13寸/10+8核/16+512G/蓝/M5", "g": "笔记本", "m": "MBA 13寸", "p": "10+8核"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MDHH4CH/A", "a": 1, "t": 0, "l": "Mac", "d": "笔记本/APPLE/MBA 13寸/10+8核/16+512G/蓝/M5", "g": "笔记本", "m": "MBA 13寸", "p": "10+8核"}, {"s": "道信通讯内江隆昌店", "c": "MH5N4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir13寸（M4）/128G/深空灰色", "g": "PAD", "m": "iPadAir13寸（M4）", "p": "128G"}, {"s": "道信通讯内江隆昌店", "c": "MH5U4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir13寸（M4）/256G/深空灰色", "g": "PAD", "m": "iPadAir13寸（M4）", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MH5W4CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir13寸（M4）/256G/星光色", "g": "PAD", "m": "iPadAir13寸（M4）", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MH304CH/A", "a": 2, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/128G/深空灰色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "128G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MH304CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/128G/深空灰色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "128G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MH304CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/128G/深空灰色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "128G"}, {"s": "道信通讯内江隆昌店", "c": "MH314CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/128G/蓝色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "128G"}, {"s": "道信通讯内江隆昌店", "c": "MH334CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/128G/星光色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "128G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MH344CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/128G/紫色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "128G"}, {"s": "道信通讯内江隆昌店", "c": "MH354CH/A", "a": 3, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/256G/深空灰色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MH354CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/256G/深空灰色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MH354CH/A", "a": 1, "t": 1, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/256G/深空灰色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MH364CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/256G/蓝色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MH374CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/256G/星光色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MH374CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/256G/星光色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MH394CH/A", "a": 1, "t": 0, "l": "iPad", "d": "PAD/APPLE/iPadAir11寸（M4）/256G/紫色", "g": "PAD", "m": "iPadAir11寸（M4）", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MJEV4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/深空灰铝壳海军蓝色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "深空灰铝壳海军蓝色运动表带-S"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJEV4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/深空灰铝壳海军蓝色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "深空灰铝壳海军蓝色运动表带-S"}, {"s": "道信通讯内江隆昌店", "c": "MJEX4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/深空灰铝壳海军蓝色运动表带-M/L", "g": "手表", "m": "S12 GPS 42MM", "p": "深空灰铝壳海军蓝色运动表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MJEY4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/黑铝壳黑色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "黑铝壳黑色运动表带-S"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJEY4CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/黑铝壳黑色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "黑铝壳黑色运动表带-S"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJEY4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/黑铝壳黑色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "黑铝壳黑色运动表带-S"}, {"s": "道信通讯内江隆昌店", "c": "MJF04CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/黑铝壳黑色运动表带-M/L", "g": "手表", "m": "S12 GPS 42MM", "p": "黑铝壳黑色运动表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MJF14CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/浅金铝壳沙砾色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "浅金铝壳沙砾色运动表带-S"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJF14CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/浅金铝壳沙砾色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "浅金铝壳沙砾色运动表带-S"}, {"s": "道信通讯内江隆昌店", "c": "MJF24CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/浅金铝壳沙砾色运动型表带-M/L", "g": "手表", "m": "S12 GPS 42MM", "p": "浅金铝壳沙砾色运动型表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MJF34CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/深古铜铝壳橄榄色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "深古铜铝壳橄榄色运动表带-S"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJF34CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/深古铜铝壳橄榄色运动表带-S/M", "g": "手表", "m": "S12 GPS 42MM", "p": "深古铜铝壳橄榄色运动表带-S"}, {"s": "道信通讯内江隆昌店", "c": "MJF44CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 42MM/深古铜铝壳橄榄色运动表带-M/L", "g": "手表", "m": "S12 GPS 42MM", "p": "深古铜铝壳橄榄色运动表带-M"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJFE4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 46MM/深古铜铝壳海军蓝色运动表带-S/M", "g": "手表", "m": "S12 GPS 46MM", "p": "深古铜铝壳海军蓝色运动表带-S"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJFF4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 46MM/深空灰铝壳海军蓝色运动表带-M/L", "g": "手表", "m": "S12 GPS 46MM", "p": "深空灰铝壳海军蓝色运动表带-M"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJFH4CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 46MM/黑铝壳黑色运动表带-M/L", "g": "手表", "m": "S12 GPS 46MM", "p": "黑铝壳黑色运动表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MJFJ4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 46MM/浅金铝壳沙砾色运动表带-S/M", "g": "手表", "m": "S12 GPS 46MM", "p": "浅金铝壳沙砾色运动表带-S"}, {"s": "道信通讯内江隆昌店", "c": "MJFK4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 46MM/浅金铝壳沙砾色运动表带-M/L", "g": "手表", "m": "S12 GPS 46MM", "p": "浅金铝壳沙砾色运动表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MJFM4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 46MM/深古铜铝壳橄榄色运动表带-M/L", "g": "手表", "m": "S12 GPS 46MM", "p": "深古铜铝壳橄榄色运动表带-M"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJFM4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/S12 GPS 46MM/深古铜铝壳橄榄色运动表带-M/L", "g": "手表", "m": "S12 GPS 46MM", "p": "深古铜铝壳橄榄色运动表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MJKT4CH/B", "a": 1, "t": 0, "l": "Watch", "d": "手表/APPLE/SE3 GPS 40MM版本/星光铝壳沙砾运动表带-S/M", "g": "手表", "m": "SE3 GPS 40MM版本", "p": "星光铝壳沙砾运动表带-S"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJLA4CH/B", "a": 2, "t": 0, "l": "Watch", "d": "手表/APPLE/SE3 GPS 44MM版本/午夜铝壳海军蓝运动表带-M/L", "g": "手表", "m": "SE3 GPS 44MM版本", "p": "午夜铝壳海军蓝运动表带-M"}, {"s": "道信通讯内江隆昌店", "c": "MKFT4CH/A", "a": 1, "t": 2, "l": "AirPods", "d": "耳机/APPLE/AirPods 5代（配无线充电盒）", "g": "耳机", "m": "AirPods 5代（配无线充电盒）", "p": ""}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MKFT4CH/A", "a": 4, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods 5代（配无线充电盒）", "g": "耳机", "m": "AirPods 5代（配无线充电盒）", "p": ""}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MKFT4CH/A", "a": 4, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods 5代（配无线充电盒）", "g": "耳机", "m": "AirPods 5代（配无线充电盒）", "p": ""}, {"s": "道信通讯内江隆昌店", "c": "MKFW4CH/A", "a": 5, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods 5代", "g": "耳机", "m": "AirPods 5代", "p": ""}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MKFW4CH/A", "a": 5, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods 5代", "g": "耳机", "m": "AirPods 5代", "p": ""}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MKFW4CH/A", "a": 4, "t": 0, "l": "AirPods", "d": "耳机/APPLE/AirPods 5代", "g": "耳机", "m": "AirPods 5代", "p": ""}, {"s": "道信通讯内江隆昌店", "c": "MJY64CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/黑色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJY64CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/黑色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJY64CH/A", "a": 5, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/黑色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJY74CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/银色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJY74CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/银色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MJY84CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJY84CH/A", "a": 5, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJY84CH/A", "a": 7, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MJY94CH/A", "a": 1, "t": 1, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJY94CH/A", "a": 4, "t": 2, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/256G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MJYA4CH/A", "a": 1, "t": 1, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/512G/黑色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "512G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJYA4CH/A", "a": 1, "t": 1, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/512G/黑色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MJYD4CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/512G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "512G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJYE4CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/512G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "512G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJYE4CH/A", "a": 1, "t": 2, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/512G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MJYF4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/1T/黑色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "1T"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJYH4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/1T/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "1T"}, {"s": "道信通讯内江隆昌店", "c": "MJYJ4CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/1T/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "1T"}, {"s": "道信通讯内江隆昌店", "c": "MJYM4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro Max/2T/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro Max", "p": "2T"}, {"s": "道信通讯内江隆昌店", "c": "MJT74CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/黑色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJT74CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/黑色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJT74CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/黑色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MJT84CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/银色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJT84CH/A", "a": 1, "t": 1, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/银色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJT84CH/A", "a": 2, "t": 2, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/银色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MJT94CH/A", "a": 2, "t": 2, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJT94CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJT94CH/A", "a": 3, "t": 5, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MJTA4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJTA4CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJTA4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/256G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro", "p": "256G"}, {"s": "道信通讯内江隆昌店", "c": "MJTC4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/黑色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJTC4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/黑色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJTC4CH/A", "a": 3, "t": 1, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/黑色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MJTD4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/银色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJTD4CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/银色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJTD4CH/A", "a": 1, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/银色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MJTE4CH/A", "a": 3, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJTE4CH/A", "a": 1, "t": 1, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJTE4CH/A", "a": 2, "t": 2, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/勃艮第酒红色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MJTF4CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "果粉通讯宜宾南溪果粉数码店", "c": "MJTF4CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "龙飞智家资阳雁江摩根时代店", "c": "MJTF4CH/A", "a": 2, "t": 0, "l": "iPhone", "d": "手机/APPLE/iPhone 18 Pro/512G/冰川蓝色", "g": "手机", "m": "iPhone 18 Pro", "p": "512G"}, {"s": "道信通讯内江隆昌店", "c": "MRQ82PA/A", "a": 1, "t": 0, "l": "Beats", "d": "耳机/APPLE/Studio3 Wireless 头戴式耳机 /桀骜黑红", "g": "耳机", "m": "Studio3 Wireless 头戴式耳机", "p": "桀骜黑红"}, {"s": "道信通讯内江隆昌店", "c": "MRQC2PA/A", "a": 1, "t": 0, "l": "Beats", "d": "耳机/APPLE/Solo3 Wireless 头戴式耳机 /桀骜黑红", "g": "耳机", "m": "Solo3 Wireless 头戴式耳机", "p": "桀骜黑红"}];
+  var SUM  = {"rows": 176, "stores": 3, "avail": 348, "transit": 47, "iphone": 182};
+  function fmt(n){ return n.toLocaleString("zh-CN"); }
+  document.getElementById("cards").innerHTML = [
+    card("门店数", SUM.stores, "家"),
+    card("SKU 行数", SUM.rows, "行"),
+    card("可用合计", SUM.avail, "台/件"),
+    card("在途合计", SUM.transit, "台/件"),
+    card("iPhone 可用", SUM.iphone, "台")
+  ].join("");
+  function card(lb, vl, unit){
+    return '<div class="card"><div class="lb">'+lb+'</div><div class="vl">'+fmt(vl)+
+           '</div><div class="sub">'+unit+'</div></div>';
+  }
+
+  function opts(id, key){
+    var set = {}; ROWS.forEach(function(r){ if(r[key]) set[r[key]]=1; });
+    var arr = Object.keys(set).sort(function(a,b){return a.localeCompare(b,"zh");});
+    var el = document.getElementById(id), cur = el.value;
+    arr.forEach(function(v){
+      var o = document.createElement("option"); o.value=v; o.textContent=v;
+      if(v===cur) o.selected=true; el.appendChild(o);
+    });
+  }
+  function initOpts(){ opts("f-store","s"); opts("f-cat","g"); opts("f-series","m"); opts("f-lob","l"); opts("f-spec","p"); }
+
+  function uniq(arr){ return arr.filter(function(v,i){return arr.indexOf(v)===i;}); }
+  function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function apply(filterSeries){
+    var store=document.getElementById("f-store").value, cat=document.getElementById("f-cat").value,
+        ser=document.getElementById("f-series").value, lob=document.getElementById("f-lob").value,
+        spec=document.getElementById("f-spec").value, kw=document.getElementById("f-kw").value.trim().toLowerCase(),
+        only=document.getElementById("f-only").checked, sort=document.getElementById("f-sort").value;
+
+    var rs = ROWS.filter(function(r){
+      if(store && r.s!==store) return false;
+      if(cat && r.g!==cat) return false;
+      if(ser && r.m!==ser) return false;
+      if(lob && r.l!==lob) return false;
+      if(spec && r.p!==spec) return false;
+      if(only && r.a<=0) return false;
+      if(kw){
+        var hay=(r.d+" "+r.c+" "+r.s+" "+r.m).toLowerCase();
+        if(hay.indexOf(kw)<0) return false;
+      }
+      return true;
+    });
+
+    if(sort==="a_desc") rs.sort(function(a,b){return b.a-a.a;});
+    else if(sort==="a_asc") rs.sort(function(a,b){return a.a-b.a;});
+    else if(sort==="s_asc") rs.sort(function(a,b){return a.s.localeCompare(b.s,"zh")||b.a-a.a;});
+    else if(sort==="d_asc") rs.sort(function(a,b){return a.d.localeCompare(b.d,"zh")||b.a-a.a;});
+
+    var ta=0, tt=0, ti=0;
+    rs.forEach(function(r){ ta+=r.a; tt+=r.t; if(r.l==="iPhone") ti+=r.a; });
+    document.getElementById("stat").innerHTML =
+      "当前筛选 <b>"+fmt(rs.length)+"</b> 行 ｜ 可用合计 <b>"+fmt(ta)+"</b> ｜ 在途 <b>"+fmt(tt)+
+      "</b> ｜ 其中 iPhone 可用 <b>"+fmt(ti)+"</b>";
+
+    if(filterSeries){
+      var pool = ROWS.filter(function(r){
+        if(cat && r.g!==cat) return false;
+        if(lob && r.l!==lob) return false;
+        return true;
+      });
+      rebuild("f-series", "m", pool);
+      rebuild("f-spec", "p", pool);
+    }
+
+    var tb=document.getElementById("tb");
+    if(!rs.length){ tb.innerHTML=""; document.getElementById("empty").style.display="block"; return; }
+    document.getElementById("empty").style.display="none";
+    var html="", n=Math.min(rs.length, 1500);
+    for(var i=0;i<n;i++){
+      var r=rs[i];
+      var cls = r.a>0 ? "" : "av0";
+      var tg = r.l==="iPhone" ? '<span class="tag iphone">iPhone</span>' : '<span class="tag lob">'+esc(r.l)+'</span>';
+      html += "<tr><td>"+esc(r.s)+"</td><td class='num'>"+esc(r.c)+"</td><td>"+esc(r.g)+"</td><td>"+esc(r.m)+
+              "</td><td class='desc'>"+esc(r.d)+"</td><td>"+tg+"</td><td class='num "+cls+"'>"+fmt(r.a)+
+              "</td><td class='num'>"+fmt(r.t)+"</td></tr>";
+    }
+    if(rs.length>n){
+      html += "<tr><td colspan='8' class='num' style='color:#7b8ea8'>仅显示前 "+n+" 行（共 "+fmt(rs.length)+" 行），请用上方条件再筛</td></tr>";
+    }
+    tb.innerHTML = html;
+  }
+
+  function rebuild(id, key, pool){
+    var el=document.getElementById(id), cur=el.value;
+    var arr = uniq(pool.map(function(r){return r[key];}).filter(function(v){return v;}))
+              .sort(function(a,b){return a.localeCompare(b,"zh");});
+    el.innerHTML = "<option value=''>"+(id==="f-series"?"全部系列":"全部规格")+"</option>";
+    arr.forEach(function(v){
+      var o=document.createElement("option"); o.value=v; o.textContent=v; if(v===cur) o.selected=true; el.appendChild(o);
+    });
+    if(arr.indexOf(cur)<0) el.value="";
+  }
+
+  ["f-store","f-cat","f-lob"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", function(){ apply(true); });
+  });
+  ["f-series","f-spec","f-sort"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", function(){ apply(false); });
+  });
+  document.getElementById("f-kw").addEventListener("input", function(){ apply(false); });
+  document.getElementById("f-only").addEventListener("change", function(){ apply(false); });
+  document.getElementById("btn-reset").addEventListener("click", function(){
+    ["f-store","f-cat","f-series","f-lob","f-spec"].forEach(function(id){ document.getElementById(id).value=""; });
+    document.getElementById("f-kw").value="";
+    document.getElementById("f-only").checked=false;
+    apply(true);
+  });
+  document.getElementById("btn-csv").addEventListener("click", function(){
+    var store=document.getElementById("f-store").value, cat=document.getElementById("f-cat").value,
+        ser=document.getElementById("f-series").value, lob=document.getElementById("f-lob").value,
+        spec=document.getElementById("f-spec").value, kw=document.getElementById("f-kw").value.trim().toLowerCase(),
+        only=document.getElementById("f-only").checked;
+    var rs = ROWS.filter(function(r){
+      if(store && r.s!==store) return false;
+      if(cat && r.g!==cat) return false;
+      if(ser && r.m!==ser) return false;
+      if(lob && r.l!==lob) return false;
+      if(spec && r.p!==spec) return false;
+      if(only && r.a<=0) return false;
+      if(kw){ var hay=(r.d+" "+r.c+" "+r.s+" "+r.m).toLowerCase(); if(hay.indexOf(kw)<0) return false; }
+      return true;
+    });
+    var lines = ["门店,商品编码,大类,系列,规格,物料描述,LOB,可用数量,在途数量"];
+    rs.forEach(function(r){
+      lines.push([esc(r.s),esc(r.c),esc(r.g),esc(r.m),esc(r.p),esc(r.d),esc(r.l),r.a,r.t].join(","));
+    });
+    var blob = new Blob(["\ufeff"+lines.join("\n")], {type:"text/csv;charset=utf-8"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download="库存明细_"+Strings()+".csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+  function Strings(){
+    var d="2026-10-23".replace(/-/g,"");
+    return d+"_"+"chuannan";
+  }
+
+  initOpts();
+  apply(true);
+})();
+</script>
+</body>
+</html>

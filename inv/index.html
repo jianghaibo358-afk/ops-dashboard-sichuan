@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>库存拆分看板 · 川渝总入口</title>
+<style>
+  :root{
+    --bg:#eef3fa; --card:#fff; --line:#dfe8f5; --line2:#eef3fb;
+    --ink:#0b2545; --ink2:#3d5674; --ink3:#7b8ea8;
+    --blue:#1668dc; --blue-soft:#e8f1ff; --sev:#d92d20;
+  }
+  *{box-sizing:border-box; -webkit-text-size-adjust:100%;}
+  body{margin:0; background:var(--bg); color:var(--ink);
+       font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; font-size:14px;}
+  .wrap{max-width:1100px; margin:0 auto; padding:18px 14px 40px;}
+  .hd h1{margin:0 0 4px; font-size:21px; font-weight:700;}
+  .hd h1 em{font-style:normal; color:var(--blue);}
+  .meta{color:var(--ink3); font-size:12px; margin-bottom:16px;}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  .card{display:block; text-decoration:none; color:inherit; background:var(--card);
+        border:1px solid var(--line); border-radius:12px; padding:14px 16px; transition:.15s;}
+  .card:hover{border-color:var(--blue); box-shadow:0 4px 14px rgba(22,104,220,.10); transform:translateY(-1px);}
+  .card .nm{font-size:16px; font-weight:700; margin-bottom:2px;}
+  .card .nt{font-size:12px; color:var(--ink3); margin-bottom:10px;}
+  .card .kv{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--ink2);}
+  .card .kv b{font-size:16px; color:var(--ink); font-weight:700; display:block; font-variant-numeric:tabular-nums;}
+  .card .hl{color:var(--blue);}
+  .foot{margin-top:18px; color:var(--ink3); font-size:12px; line-height:1.7;}
+  #gate{position:fixed; inset:0; z-index:99; display:flex; align-items:center; justify-content:center;
+        background:linear-gradient(160deg,#eef3fa,#dfe8f5);}
+  .gate-card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:26px 28px; width:300px; text-align:center;}
+  .gate-card h2{margin:0 0 6px; font-size:17px;}
+  .gate-card p{margin:0 0 14px; color:var(--ink3); font-size:12px;}
+  .gate-card input{width:100%; height:36px; border:1px solid var(--line); border-radius:8px; padding:0 10px; font-size:14px; margin-bottom:10px;}
+  .gate-card button{width:100%; height:36px; border:0; border-radius:8px; background:var(--blue); color:#fff; font-size:14px; cursor:pointer;}
+  .gate-err{color:var(--sev); font-size:12px; margin-top:8px; height:16px;}
+  @media (max-width:760px){ .grid{grid-template-columns:repeat(1,1fr);} }
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="gate-card">
+    <h2>库存拆分看板 · 川渝</h2>
+    <p>请输入访问密码</p>
+    <input type="password" id="pw" placeholder="密码" autocomplete="off">
+    <button id="gate-btn">进入</button>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="hd">
+    <h1>苹果零售 · <em>库存拆分看板</em>（四川）</h1>
+    <div class="meta">库存日期 2026-10-23 ｜ 生成于 2026-10-23 09:29 ｜ 点击任意卡片进入明细</div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="foot">
+    数据源：DDC 实时库存查询 → 按 54 家川渝门店筛选 → 物料描述来自「8.12四川送达方编码」物料描述表；<br>
+    描述匹配不上的商品已整行剔除（主要为 Beats / 第三方配件）。明细页可按门店、大类、系列、LOB、规格筛选并导出 CSV。
+  </div>
+</div>
+
+<script>
+(function(){
+  var HASH = 2392125205, KEY = "inv_pw_ok";
+  function djb2(s){var h=5381;for(var i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))>>>0;}return h;}
+  var gate = document.getElementById("gate");
+  function unlock(){ try{sessionStorage.setItem(KEY,"1");}catch(e){} gate.style.display="none"; }
+  try{ if(sessionStorage.getItem(KEY)==="1"){ unlock(); } }catch(e){}
+  document.getElementById("gate-btn").onclick = function(){
+    var v = document.getElementById("pw").value.trim();
+    if(djb2(v)===HASH){ unlock(); }
+    else { document.getElementById("gate-err").textContent = "密码不正确"; }
+  };
+  document.getElementById("pw").addEventListener("keydown", function(e){ if(e.key==="Enter"){ document.getElementById("gate-btn").click(); } });
+
+  var CARDS = [{"k": "summary", "n": "川渝汇总", "note": "全部 54 家门店 · 全品类", "rows": 3096, "stores": 54, "avail": 7052, "transit": 726, "iphone": 4339}, {"k": "chengdu", "n": "成都办事处", "note": "5 家门店 · 全品类", "rows": 278, "stores": 5, "avail": 664, "transit": 46, "iphone": 427}, {"k": "chuanbei", "n": "川北办事处", "note": "8 家门店 · 全品类", "rows": 475, "stores": 8, "avail": 1051, "transit": 53, "iphone": 596}, {"k": "chuandong", "n": "川东办事处", "note": "12 家门店 · 全品类", "rows": 756, "stores": 12, "avail": 1731, "transit": 158, "iphone": 1005}, {"k": "chuannan", "n": "川南办事处", "note": "3 家门店 · 全品类", "rows": 176, "stores": 3, "avail": 348, "transit": 47, "iphone": 182}, {"k": "chuanxi", "n": "川西办事处", "note": "2 家门店 · 全品类", "rows": 83, "stores": 2, "avail": 176, "transit": 52, "iphone": 87}, {"k": "chongqing", "n": "重庆办事处", "note": "24 家门店 · 全品类", "rows": 1328, "stores": 24, "avail": 3082, "transit": 370, "iphone": 2042}, {"k": "hongfan", "n": "宏帆 10 店", "note": "仅 iPhone", "rows": 309, "stores": 10, "avail": 804, "transit": 89, "iphone": 804}, {"k": "fengyang", "n": "风扬 3 店", "note": "仅 iPhone", "rows": 86, "stores": 3, "avail": 184, "transit": 15, "iphone": 184}];
+  function fmt(n){ return n.toLocaleString("zh-CN"); }
+  document.getElementById("grid").innerHTML = CARDS.map(function(c){
+    return '<a class="card" href="'+c.k+'.html">'+
+      '<div class="nm">'+c.n+'</div>'+
+      '<div class="nt">'+c.note+'</div>'+
+      '<div class="kv">'+
+        '<div><b>'+fmt(c.stores)+'</b>门店</div>'+
+        '<div><b>'+fmt(c.rows)+'</b>行</div>'+
+        '<div><b>'+fmt(c.avail)+'</b>可用</div>'+
+        '<div><b class="hl">'+fmt(c.iphone)+'</b>iPhone可用</div>'+
+      '</div></a>';
+  }).join("");
+})();
+</script>
+</body>
+</html>
