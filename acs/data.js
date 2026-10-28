@@ -1,4 +1,4 @@
-const ACS_DATA = {
+var ACS_DATA = {
  "meta": {
   "asOf": "2026-10-28",
   "month": "2026-10",
