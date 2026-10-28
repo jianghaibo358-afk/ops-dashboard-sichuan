@@ -59,6 +59,7 @@
   <header>
     <h1>ACS 连带率看板 · 川渝</h1>
     <div class="meta" id="meta">数据加载中…</div>
+    <button class="btn primary" id="btnExport">导出 CSV</button>
   </header>
 
   <div class="cards" id="cards"></div>
@@ -266,6 +267,7 @@ function bind(){
   ['fOff','fType','fRep','fName','fRateMin','fRateMax'].forEach(function(id){
     document.getElementById(id).addEventListener('input',onFilter);
   });
+  document.getElementById('btnExport').addEventListener('click',exportCSV);
   document.getElementById('btnReset').addEventListener('click',function(){
     document.getElementById('fOff').value='';
     document.getElementById('fType').value='';
@@ -285,6 +287,39 @@ function bind(){
     });
   });
 }
+function exportCSV(){
+  var rows = filtered();
+  if(rows.length===0){ alert('当前筛选无数据'); return; }
+  var head = ['办事处','门店','类型','负责人','月SO(万)','目标(万)','SO达成率%','iPhone','ACS','连带率%','缺口(台)'];
+  function q(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
+  function rp(x){ return x==null||x===undefined?'':(x*100).toFixed(2); }
+  var lines=[head.map(q).join(',')];
+  // 按办事处分组导出，含小计行
+  var groups={},order=[];
+  rows.forEach(function(s){ if(!groups[s.off]){groups[s.off]=[];order.push(s.off);} groups[s.off].push(s); });
+  order.sort();
+  order.forEach(function(off){
+    var list=groups[off];
+    var gip=0,gacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;});
+    var grate=gip?(gacs/gip*100):0;
+    lines.push([q(off+' (小计 '+list.length+'家)'),'', '', '', '', '', '', gip, gacs, grate.toFixed(2), Math.round(gip*TARGET-gacs)].join(','));
+    list.forEach(function(s){
+      lines.push([
+        q(s.off), q(s.name), q(s.type), q(s.rep),
+        (s.a||0), (s.g||0), rp(s.r), s.ip, s.acsN, rp(s.acsR), Math.round(gapOf(s))
+      ].join(','));
+    });
+  });
+  var csv='\ufeff'+lines.join('\r\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');
+  var d=(D.meta&&D.meta.asOf)||'data';
+  a.href=URL.createObjectURL(blob);
+  a.download='ACS连带率_'+d+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
 function onFilter(){
   var mn=parseInt(document.getElementById('fRateMin').value,10);
   var mx=parseInt(document.getElementById('fRateMax').value,10);
