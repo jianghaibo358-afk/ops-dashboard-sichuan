@@ -108,6 +108,8 @@
             <th class="num">ACS</th>
             <th class="num">连带率</th>
             <th>距目标</th>
+            <th class="num">今日iPhone</th>
+            <th class="num">今日ACS</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -115,12 +117,12 @@
     </div>
   </div>
 
-  <div class="footer">数据更新于 <span id="asOf"></span> · 口径：ACS=一级分类AppleCare+(线下门店)，连带率=ACS/iPhone，目标20%</div>
+  <div class="footer">数据更新于 <span id="asOf"></span> · 口径：ACS=一级分类AppleCare+(线下门店)，连带率=ACS/iPhone，目标15%</div>
 
 <script src="data.js"></script>
 <script>
 var D = null;
-var TARGET = 0.20;
+var TARGET = 0.15;
 var sortKey = 'acsR', sortAsc = false;
 
 function fmtRate(r){ return r==null||r===undefined ? '—' : (r*100).toFixed(1)+'%'; }
@@ -135,8 +137,8 @@ function gapLabel(s){
 function rateTag(r){
   if(r==null||r===undefined) return '—';
   var p=r*100;
-  if(p>=20) return '<span class="tag ok">'+p.toFixed(1)+'%</span>';
-  if(p>=15) return '<span class="tag warn">'+p.toFixed(1)+'%</span>';
+  if(p>=15) return '<span class="tag ok">'+p.toFixed(1)+'%</span>';
+  if(p>=10) return '<span class="tag warn">'+p.toFixed(1)+'%</span>';
   return '<span class="tag bad">'+p.toFixed(1)+'%</span>';
 }
 function barOf(r){
@@ -189,8 +191,8 @@ function renderCards(){
   html+='<div class="card"><div class="k">门店数</div><div class="v">'+s.length+'</div></div>';
   html+='<div class="card"><div class="k">iPhone月销量</div><div class="v">'+ip.toLocaleString()+' <small>台</small></div></div>';
   html+='<div class="card"><div class="k">ACS连带</div><div class="v">'+acs.toLocaleString()+' <small>台</small></div></div>';
-  html+='<div class="card"><div class="k">连带率</div><div class="v" style="color:'+(rate>=20?'var(--ok)':'var(--bad)')+'">'+rate.toFixed(2)+'%</div></div>';
-  html+='<div class="card"><div class="k">距20%目标</div><div class="v" style="color:'+(gap<=0?'var(--ok)':'var(--bad)')+'">'+(gap<=0?'超'+Math.round(-gap):'缺'+Math.round(gap))+' <small>台</small></div></div>';
+  html+='<div class="card"><div class="k">连带率</div><div class="v" style="color:'+(rate>=15?'var(--ok)':'var(--bad)')+'">'+rate.toFixed(2)+'%</div></div>';
+  html+='<div class="card"><div class="k">距15%目标</div><div class="v" style="color:'+(gap<=0?'var(--ok)':'var(--bad)')+'">'+(gap<=0?'超'+Math.round(-gap):'缺'+Math.round(gap))+' <small>台</small></div></div>';
   document.getElementById('cards').innerHTML=html;
 }
 
@@ -226,16 +228,17 @@ function render(){
   order.sort();
 
   var html='';
-  if(rows.length===0){ html='<tr><td colspan="11" class="empty">无匹配门店</td></tr>'; }
+  if(rows.length===0){ html='<tr><td colspan="13" class="empty">无匹配门店</td></tr>'; }
   order.forEach(function(off){
     var list=groups[off];
-    var gip=0,gacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;});
+    var gip=0,gacs=0,gdip=0,gdacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;gdip+=x.ipD||0;gdacs+=x.acsD||0;});
     var grate=gip?gacs/gip*100:0;
     html+='<tr class="offrow"><td>'+off+'</td><td>小计 '+list.length+' 家</td><td></td><td></td>'+
           '<td class="num"></td><td class="num"></td><td class="num"></td>'+
           '<td class="num">'+gip+'</td><td class="num">'+gacs+'</td>'+
-          '<td class="num" style="color:'+(grate>=20?'var(--ok)':'var(--bad)')+'">'+grate.toFixed(1)+'%</td>'+
-          '<td></td></tr>';
+          '<td class="num" style="color:'+(grate>=15?'var(--ok)':'var(--bad)')+'">'+grate.toFixed(1)+'%</td>'+
+          '<td></td>'+
+          '<td class="num">'+gdip+'</td><td class="num">'+gdacs+'</td></tr>';
     // 组内排序
     list.sort(function(a,b){
       var va=sortKey in a?a[sortKey]:0, vb=sortKey in b?b[sortKey]:0;
@@ -255,6 +258,8 @@ function render(){
         '<td class="num">'+s.acsN+'</td>'+
         '<td class="num">'+rateTag(s.acsR)+' '+barOf(s.acsR)+'</td>'+
         '<td>'+gapLabel(s)+'</td>'+
+        '<td class="num">'+(s.ipD||0)+'</td>'+
+        '<td class="num">'+(s.acsD||0)+'</td>'+
         '</tr>';
     });
   });
@@ -278,7 +283,7 @@ function bind(){
     render();
   });
   // 表头排序
-  var thMap={3:'rep',4:'a',5:'g',6:'r',7:'ip',8:'acsN',9:'acsR'};
+  var thMap={3:'rep',4:'a',5:'g',6:'r',7:'ip',8:'acsN',9:'acsR',11:'ipD',12:'acsD'};
   document.querySelectorAll('thead th').forEach(function(th,i){
     th.addEventListener('click',function(){
       var k=thMap[i]; if(!k)return;
@@ -290,7 +295,7 @@ function bind(){
 function exportCSV(){
   var rows = filtered();
   if(rows.length===0){ alert('当前筛选无数据'); return; }
-  var head = ['办事处','门店','类型','负责人','月SO(万)','目标(万)','SO达成率%','iPhone','ACS','连带率%','缺口(台)'];
+  var head = ['办事处','门店','类型','负责人','月SO(万)','目标(万)','SO达成率%','iPhone','ACS','连带率%','缺口(台)','今日iPhone','今日ACS'];
   function q(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
   function rp(x){ return x==null||x===undefined?'':(x*100).toFixed(2); }
   var lines=[head.map(q).join(',')];
@@ -300,13 +305,13 @@ function exportCSV(){
   order.sort();
   order.forEach(function(off){
     var list=groups[off];
-    var gip=0,gacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;});
+    var gip=0,gacs=0,gdip=0,gdacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;gdip+=x.ipD||0;gdacs+=x.acsD||0;});
     var grate=gip?(gacs/gip*100):0;
-    lines.push([q(off+' (小计 '+list.length+'家)'),'', '', '', '', '', '', gip, gacs, grate.toFixed(2), Math.round(gip*TARGET-gacs)].join(','));
+    lines.push([q(off+' (小计 '+list.length+'家)'),'', '', '', '', '', '', gip, gacs, grate.toFixed(2), Math.round(gip*TARGET-gacs), gdip, gdacs].join(','));
     list.forEach(function(s){
       lines.push([
         q(s.off), q(s.name), q(s.type), q(s.rep),
-        (s.a||0), (s.g||0), rp(s.r), s.ip, s.acsN, rp(s.acsR), Math.round(gapOf(s))
+        (s.a||0), (s.g||0), rp(s.r), s.ip, s.acsN, rp(s.acsR), Math.round(gapOf(s)), (s.ipD||0), (s.acsD||0)
       ].join(','));
     });
   });
