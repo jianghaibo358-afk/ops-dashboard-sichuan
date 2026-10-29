@@ -109,11 +109,7 @@
           <tr>
             <th>办事处</th>
             <th>门店</th>
-            <th>类型</th>
             <th>负责人</th>
-            <th class="num">月SO(万)</th>
-            <th class="num">目标(万)</th>
-            <th class="num">SO达成率</th>
             <th class="num">iPhone</th>
             <th class="num">ACS</th>
             <th class="num">连带率</th>
@@ -238,13 +234,12 @@ function render(){
   order.sort();
 
   var html='';
-  if(rows.length===0){ html='<tr><td colspan="13" class="empty">无匹配门店</td></tr>'; }
+  if(rows.length===0){ html='<tr><td colspan="9" class="empty">无匹配门店</td></tr>'; }
   order.forEach(function(off){
     var list=groups[off];
     var gip=0,gacs=0,gdip=0,gdacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;gdip+=x.ipD||0;gdacs+=x.acsD||0;});
     var grate=gip?gacs/gip*100:0;
-    html+='<tr class="offrow"><td>'+off+'</td><td>小计 '+list.length+' 家</td><td></td><td></td>'+
-          '<td class="num"></td><td class="num"></td><td class="num"></td>'+
+    html+='<tr class="offrow"><td>'+off+'</td><td>小计 '+list.length+' 家</td><td></td>'+
           '<td class="num">'+gip+'</td><td class="num">'+gacs+'</td>'+
           '<td class="num" style="color:'+(grate>=15?'var(--ok)':'var(--bad)')+'">'+grate.toFixed(1)+'%</td>'+
           '<td></td>'+
@@ -259,11 +254,7 @@ function render(){
       html+='<tr>'+
         '<td></td>'+
         '<td>'+esc(s.name)+'</td>'+
-        '<td>'+esc(s.type)+'</td>'+
         '<td>'+esc(s.rep)+'</td>'+
-        '<td class="num">'+(s.a||0).toLocaleString()+'</td>'+
-        '<td class="num">'+(s.g||0).toLocaleString()+'</td>'+
-        '<td class="num">'+fmtR(s.r)+'</td>'+
         '<td class="num">'+s.ip+'</td>'+
         '<td class="num">'+s.acsN+'</td>'+
         '<td class="num">'+rateTag(s.acsR)+' '+barOf(s.acsR)+'</td>'+
@@ -293,7 +284,7 @@ function bind(){
     render();
   });
   // 表头排序
-  var thMap={3:'rep',4:'a',5:'g',6:'r',7:'ip',8:'acsN',9:'acsR',11:'ipD',12:'acsD'};
+  var thMap={2:'rep',3:'ip',4:'acsN',5:'acsR',7:'ipD',8:'acsD'};
   document.querySelectorAll('thead th').forEach(function(th,i){
     th.addEventListener('click',function(){
       var k=thMap[i]; if(!k)return;
@@ -305,7 +296,7 @@ function bind(){
 function exportCSV(){
   var rows = filtered();
   if(rows.length===0){ alert('当前筛选无数据'); return; }
-  var head = ['办事处','门店','类型','负责人','月SO(万)','目标(万)','SO达成率%','iPhone','ACS','连带率%','缺口(台)','今日iPhone','今日ACS'];
+  var head = ['办事处','门店','负责人','iPhone','ACS','连带率%','缺口(台)','今日iPhone','今日ACS'];
   function q(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
   function rp(x){ return x==null||x===undefined?'':(x*100).toFixed(2); }
   var lines=[head.map(q).join(',')];
@@ -317,11 +308,11 @@ function exportCSV(){
     var list=groups[off];
     var gip=0,gacs=0,gdip=0,gdacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;gdip+=x.ipD||0;gdacs+=x.acsD||0;});
     var grate=gip?(gacs/gip*100):0;
-    lines.push([q(off+' (小计 '+list.length+'家)'),'', '', '', '', '', '', gip, gacs, grate.toFixed(2), Math.round(gip*TARGET-gacs), gdip, gdacs].join(','));
+    lines.push([q(off+' (小计 '+list.length+'家)'),'', '', gip, gacs, grate.toFixed(2), Math.round(gip*TARGET-gacs), gdip, gdacs].join(','));
     list.forEach(function(s){
       lines.push([
-        q(s.off), q(s.name), q(s.type), q(s.rep),
-        (s.a||0), (s.g||0), rp(s.r), s.ip, s.acsN, rp(s.acsR), Math.round(gapOf(s)), (s.ipD||0), (s.acsD||0)
+        q(s.off), q(s.name), q(s.rep),
+        s.ip, s.acsN, rp(s.acsR), Math.round(gapOf(s)), (s.ipD||0), (s.acsD||0)
       ].join(','));
     });
   });
