@@ -227,23 +227,28 @@ function render(){
   document.getElementById('summary').textContent =
     '筛选结果 '+rows.length+' 家 · iPhone '+ip+' 台 · ACS '+acs+' 台 · 连带率 '+(ip?rate.toFixed(2)+'%':'—')+' · 未达标 '+missing+' 家';
 
-  // 按办事处分组
-  var groups={},order=[];
-  rows.forEach(function(s){ if(!groups[s.off]){groups[s.off]=[];order.push(s.off);} groups[s.off].push(s); });
+  // 按办事处分组（筛选后门店），但办事处总计行按全量办事处列表固定显示
+  var groups={};
+  rows.forEach(function(s){ if(!groups[s.off])groups[s.off]=[]; groups[s.off].push(s); });
+  // 全量办事处列表（不受筛选影响）
+  var order=[];
+  D.stores.forEach(function(s){ if(order.indexOf(s.off)<0)order.push(s.off); });
   order.sort();
 
   var html='';
   if(rows.length===0){ html='<tr><td colspan="9" class="empty">无匹配门店</td></tr>'; }
   order.forEach(function(off){
-    var list=groups[off];
-    var gip=0,gacs=0,gdip=0,gdacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;gdip+=x.ipD||0;gdacs+=x.acsD||0;});
-    var grate=gip?gacs/gip*100:0;
+    var list=groups[off]||[];
+    // 办事处全量总计（不受筛选影响）
+    var full=D.stores.filter(function(x){return x.off===off;});
+    var fip=0,facs=0,fdip=0,fdacs=0; full.forEach(function(x){fip+=x.ip;facs+=x.acsN;fdip+=x.ipD||0;fdacs+=x.acsD||0;});
+    var grate=fip?facs/fip*100:0;
     html+='<tr class="offrow"><td>'+off+'</td>'+
-          '<td>小计 '+list.length+' 家 · 汇总连带率 <b style="color:'+(grate>=15?'var(--ok)':'var(--bad)')+'">'+grate.toFixed(2)+'%</b></td><td></td>'+
-          '<td class="num">'+gip+'</td><td class="num">'+gacs+'</td>'+
+          '<td>总计 '+full.length+' 家 · 汇总连带率 <b style="color:'+(grate>=15?'var(--ok)':'var(--bad)')+'">'+grate.toFixed(2)+'%</b></td><td></td>'+
+          '<td class="num">'+fip+'</td><td class="num">'+facs+'</td>'+
           '<td class="num" style="color:'+(grate>=15?'var(--ok)':'var(--bad)')+'">'+grate.toFixed(1)+'%</td>'+
           '<td></td>'+
-          '<td class="num">'+gdip+'</td><td class="num">'+gdacs+'</td></tr>';
+          '<td class="num">'+fdip+'</td><td class="num">'+fdacs+'</td></tr>';
     // 组内排序
     list.sort(function(a,b){
       var va=sortKey in a?a[sortKey]:0, vb=sortKey in b?b[sortKey]:0;
@@ -308,15 +313,18 @@ function exportCSV(){
   function q(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
   function rp(x){ return x==null||x===undefined?'':(x*100).toFixed(2); }
   var lines=[head.map(q).join(',')];
-  // 按办事处分组导出，含小计行
-  var groups={},order=[];
-  rows.forEach(function(s){ if(!groups[s.off]){groups[s.off]=[];order.push(s.off);} groups[s.off].push(s); });
+  // 按办事处导出：总计行用全量办事处，门店行用筛选后
+  var groups={};
+  rows.forEach(function(s){ if(!groups[s.off])groups[s.off]=[]; groups[s.off].push(s); });
+  var order=[];
+  D.stores.forEach(function(s){ if(order.indexOf(s.off)<0)order.push(s.off); });
   order.sort();
   order.forEach(function(off){
-    var list=groups[off];
-    var gip=0,gacs=0,gdip=0,gdacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;gdip+=x.ipD||0;gdacs+=x.acsD||0;});
-    var grate=gip?(gacs/gip*100):0;
-    lines.push([q(off+' (小计 '+list.length+'家)'),'', '', gip, gacs, grate.toFixed(2), Math.round(gip*TARGET-gacs), gdip, gdacs].join(','));
+    var list=groups[off]||[];
+    var full=D.stores.filter(function(x){return x.off===off;});
+    var fip=0,facs=0,fdip=0,fdacs=0; full.forEach(function(x){fip+=x.ip;facs+=x.acsN;fdip+=x.ipD||0;fdacs+=x.acsD||0;});
+    var grate=fip?(facs/fip*100):0;
+    lines.push([q(off+' (总计 '+full.length+'家)'),'', '', fip, facs, grate.toFixed(2), Math.round(fip*TARGET-facs), fdip, fdacs].join(','));
     list.forEach(function(s){
       lines.push([
         q(s.off), q(s.name), q(s.rep),
