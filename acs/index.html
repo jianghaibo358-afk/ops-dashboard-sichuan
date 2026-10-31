@@ -33,6 +33,7 @@
   .btn{padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:12px;cursor:pointer;color:var(--text)}
   .btn:hover{background:#f0f1f3}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.active{background:var(--bad);border-color:var(--bad);color:#fff}
   .tblwrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
   .summary{font-size:11px;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--line)}
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -96,6 +97,7 @@
         <input type="range" id="fRateMin" min="0" max="100" value="0" step="1">
         <input type="range" id="fRateMax" min="0" max="100" value="100" step="1">
       </div>
+      <button class="btn" id="btnMissing">只看未达标</button>
       <button class="btn primary" id="btnReset">重置</button>
     </div>
   </div>
@@ -127,6 +129,7 @@
 var D = null;
 var TARGET = 0.15;
 var sortKey = 'acsR', sortAsc = false;
+var onlyMissing = false;
 
 function fmtRate(r){ return r==null||r===undefined ? '—' : (r*100).toFixed(1)+'%'; }
 function fmtR(r){ return r==null||r===undefined ? '—' : r.toFixed(1)+'%'; }
@@ -211,6 +214,7 @@ function filtered(){
     if(fName && s.name.indexOf(fName)<0) return false;
     if(s.acsR==null||s.acsR===undefined){ if(rMin>0) return false; }
     else { if(s.acsR<rMin||s.acsR>rMax) return false; }
+    if(onlyMissing && gapOf(s)<=0) return false;
     return true;
   });
 }
@@ -234,7 +238,8 @@ function render(){
     var list=groups[off];
     var gip=0,gacs=0,gdip=0,gdacs=0; list.forEach(function(x){gip+=x.ip;gacs+=x.acsN;gdip+=x.ipD||0;gdacs+=x.acsD||0;});
     var grate=gip?gacs/gip*100:0;
-    html+='<tr class="offrow"><td>'+off+'</td><td>小计 '+list.length+' 家</td><td></td>'+
+    html+='<tr class="offrow"><td>'+off+'</td>'+
+          '<td>小计 '+list.length+' 家 · 汇总连带率 <b style="color:'+(grate>=15?'var(--ok)':'var(--bad)')+'">'+grate.toFixed(2)+'%</b></td><td></td>'+
           '<td class="num">'+gip+'</td><td class="num">'+gacs+'</td>'+
           '<td class="num" style="color:'+(grate>=15?'var(--ok)':'var(--bad)')+'">'+grate.toFixed(1)+'%</td>'+
           '<td></td>'+
@@ -269,6 +274,11 @@ function bind(){
     document.getElementById(id).addEventListener('input',onFilter);
   });
   document.getElementById('btnExport').addEventListener('click',exportCSV);
+  document.getElementById('btnMissing').addEventListener('click',function(){
+    onlyMissing=!onlyMissing;
+    this.classList.toggle('active', onlyMissing);
+    render();
+  });
   document.getElementById('btnReset').addEventListener('click',function(){
     document.getElementById('fOff').value='';
     document.getElementById('fType').value='';
@@ -276,6 +286,9 @@ function bind(){
     document.getElementById('fName').value='';
     document.getElementById('fRateMin').value=0;
     document.getElementById('fRateMax').value=100;
+    onlyMissing=false;
+    document.getElementById('btnMissing').classList.remove('active');
+    document.getElementById('rateLabel').textContent='0% – 100%';
     render();
   });
   // 表头排序
